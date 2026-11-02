@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#db2777">
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen pb-20 font-sans">
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-24 font-sans">
 
   <!-- Header -->
   <header class="bg-gradient-to-r from-pink-600 to-purple-600 text-white p-4 shadow-md sticky top-0 z-50">
@@ -18,18 +18,21 @@
         <i data-lucide="sparkles" class="w-6 h-6"></i>
         <h1 class="font-bold text-lg tracking-wide">Space da Bibi</h1>
       </div>
-      <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">v1.1</span>
+      <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">v1.2</span>
     </div>
   </header>
 
-  <!-- Navigation Tabs -->
+  <!-- Navigation Tabs (Com Tela Inicial, Financeiro e Rotina) -->
   <nav class="max-w-md mx-auto px-4 mt-4">
-    <div class="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
-      <button onclick="mudarAba('financeiro')" id="btn-financeiro" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 bg-pink-600 text-white shadow-sm">
+    <div class="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200 gap-1">
+      <button onclick="mudarAba('home')" id="btn-home" class="flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-pink-600 text-white shadow-sm">
+        <i data-lucide="home" class="w-4 h-4"></i> Início
+      </button>
+      <button onclick="mudarAba('financeiro')" id="btn-financeiro" class="flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50">
         <i data-lucide="wallet" class="w-4 h-4"></i> Financeiro
       </button>
-      <button onclick="mudarAba('rotina')" id="btn-rotina" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-50">
-        <i data-lucide="calendar-check" class="w-4 h-4"></i> Rotina & Report
+      <button onclick="mudarAba('rotina')" id="btn-rotina" class="flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50">
+        <i data-lucide="calendar-check" class="w-4 h-4"></i> Rotina
       </button>
     </div>
   </nav>
@@ -37,18 +40,52 @@
   <!-- Main Container -->
   <main class="max-w-md mx-auto p-4 space-y-4">
 
-    <!-- ABA FINANCEIRO -->
-    <section id="aba-financeiro" class="space-y-4">
-      <!-- Cards Resumo -->
+    <!-- 1. ABA TELA INICIAL (HOME) -->
+    <section id="aba-home" class="space-y-4">
+      <div class="bg-gradient-to-br from-pink-500 to-purple-600 p-5 rounded-3xl text-white shadow-md space-y-2">
+        <p class="text-xs font-medium text-pink-100">Resumo Geral do Mês Atual</p>
+        <h2 id="home-total-mes" class="text-3xl font-black">R$ 0,00</h2>
+        <p id="home-qtd-gastos" class="text-xs text-pink-100">0 lançamentos registrados neste mês</p>
+      </div>
+
       <div class="grid grid-cols-2 gap-3">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Gasto</p>
-          <p id="home-total-gasto" class="text-xl font-black text-pink-600 mt-1">R$ 0,00</p>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+          <div class="p-3 bg-pink-50 text-pink-600 rounded-xl">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Reports Salvos</p>
+            <p id="home-total-reports" class="text-lg font-black text-slate-800">0</p>
+          </div>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
-          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lançamentos</p>
-          <p id="fin-registros" class="text-xl font-black text-purple-700 mt-1">0</p>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+          <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Total Geral</p>
+            <p id="home-total-geral" class="text-lg font-black text-slate-800">R$ 0,00</p>
+          </div>
         </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <h3 class="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">Atividades Recentes</h3>
+        <div id="home-recentes" class="space-y-2">
+          <p class="text-xs text-center text-slate-400 py-3">Nenhuma atividade recente.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ABA FINANCEIRO (COM SELEÇÃO DE MÊS) -->
+    <section id="aba-financeiro" class="space-y-4 hidden">
+      
+      <!-- Seletor de Mês -->
+      <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-600">Filtrar por Mês:</span>
+        <select id="filtro-mes" onchange="mudarFiltroMes(this.value)" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500">
+          <!-- Preenchido via JS -->
+        </select>
       </div>
 
       <!-- Novo Gasto -->
@@ -70,6 +107,13 @@
               <input type="number" step="0.01" id="gasto-valor" placeholder="0,00" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
             </div>
             <div>
+              <label class="font-semibold text-slate-600">Data do Gasto</label>
+              <input type="date" id="gasto-data" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
               <label class="font-semibold text-slate-600">Categoria</label>
               <select id="gasto-cat" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
                 <option value="Escola / Estudos">Escola / Estudos</option>
@@ -79,9 +123,6 @@
                 <option value="Outros">Outros</option>
               </select>
             </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
             <div>
               <label class="font-semibold text-slate-600">Divisão</label>
               <select id="gasto-divisao" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
@@ -90,15 +131,16 @@
                 <option value="Pago pela Mãe">Pago pela Mãe</option>
               </select>
             </div>
-            <div>
-              <label class="font-semibold text-slate-600">Comprovante (Foto)</label>
-              <label class="flex items-center justify-center gap-1.5 w-full mt-1 p-2.5 bg-slate-50 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-100 transition text-slate-600">
-                <i data-lucide="camera" class="w-4 h-4 text-pink-600"></i>
-                <span id="file-label-text" class="truncate">Tirar Foto</span>
-                <input type="file" accept="image/*" class="hidden" onchange="tratarFotoDrive(event)">
-              </label>
-              <input type="hidden" id="gasto-drive">
-            </div>
+          </div>
+
+          <div>
+            <label class="font-semibold text-slate-600">Comprovante (Foto)</label>
+            <label class="flex items-center justify-center gap-1.5 w-full mt-1 p-2.5 bg-slate-50 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-100 transition text-slate-600">
+              <i data-lucide="camera" class="w-4 h-4 text-pink-600"></i>
+              <span id="file-label-text" class="truncate">Tirar Foto do Comprovante</span>
+              <input type="file" accept="image/*" class="hidden" onchange="tratarFotoDrive(event)">
+            </label>
+            <input type="hidden" id="gasto-drive">
           </div>
 
           <button onclick="adicionarGasto()" class="w-full mt-2 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
@@ -107,21 +149,21 @@
         </div>
       </div>
 
-      <!-- Histórico de Gastos -->
+      <!-- Histórico de Gastos do Mês Selecionado -->
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <h3 class="font-bold text-sm text-slate-800">Histórico de Gastos</h3>
+          <h3 id="titulo-historico-mes" class="font-bold text-sm text-slate-800">Gastos do Mês</h3>
           <button onclick="exportarCSV()" class="text-xs text-pink-600 hover:underline flex items-center gap-1 font-semibold">
             <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar CSV
           </button>
         </div>
         <div id="lista-gastos" class="space-y-2 max-h-72 overflow-y-auto">
-          <p class="text-xs text-center text-slate-400 py-3">Nenhum gasto registrado.</p>
+          <p class="text-xs text-center text-slate-400 py-3">Nenhum gasto registrado neste mês.</p>
         </div>
       </div>
     </section>
 
-    <!-- ABA ROTINA & REPORT -->
+    <!-- 3. ABA ROTINA & REPORT -->
     <section id="aba-rotina" class="space-y-4 hidden">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
@@ -202,21 +244,31 @@
     }
     
     function mudarAba(aba) {
-      const f = document.getElementById('aba-financeiro');
-      const r = document.getElementById('aba-rotina');
-      const bf = document.getElementById('btn-financeiro');
-      const br = document.getElementById('btn-rotina');
+      const home = document.getElementById('aba-home');
+      const fin = document.getElementById('aba-financeiro');
+      const rot = document.getElementById('aba-rotina');
+      
+      const bHome = document.getElementById('btn-home');
+      const bFin = document.getElementById('btn-financeiro');
+      const bRot = document.getElementById('btn-rotina');
 
-      if (aba === 'financeiro') {
-        f.classList.remove('hidden');
-        r.classList.add('hidden');
-        bf.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 bg-pink-600 text-white shadow-sm";
-        br.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-50";
+      home.classList.add('hidden');
+      fin.classList.add('hidden');
+      rot.classList.add('hidden');
+
+      bHome.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50";
+      bFin.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50";
+      bRot.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50";
+
+      if (aba === 'home') {
+        home.classList.remove('hidden');
+        bHome.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-pink-600 text-white shadow-sm";
+      } else if (aba === 'financeiro') {
+        fin.classList.remove('hidden');
+        bFin.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-pink-600 text-white shadow-sm";
       } else {
-        r.classList.remove('hidden');
-        f.classList.add('hidden');
-        br.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 bg-purple-700 text-white shadow-sm";
-        bf.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-50";
+        rot.classList.remove('hidden');
+        bRot.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-purple-700 text-white shadow-sm";
       }
     }
   </script>
