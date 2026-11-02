@@ -1,23 +1,381 @@
-<!-- Cabeçalho com o Botão de Login do Google -->
-<header class="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4 shadow-md sticky top-0 z-40">
-  <div class="max-w-md mx-auto flex justify-between items-center">
-    <div class="flex items-center space-x-3">
-      <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-lg">🚀</div>
-      <div>
-        <h1 class="font-bold text-lg leading-tight">Space da Bibi</h1>
-        <p class="text-xs text-pink-100">Gestão de Gastos e Rotina</p>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space da Bibi - Gestão & Rotina</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#ec4899">
+  <!-- CSS Tailwind e FontAwesome via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-slate-50 min-h-screen pb-20 text-slate-800 font-sans">
+
+  <!-- Header do App -->
+  <header class="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4 shadow-md sticky top-0 z-40">
+    <div class="max-w-md mx-auto flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-lg">🚀</div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">Space da Bibi</h1>
+          <p class="text-xs text-pink-100">Gestão de Gastos e Rotina</p>
+        </div>
+      </div>
+      
+      <!-- Controle de Autenticação do Google -->
+      <div id="auth-container">
+        <button id="btn-login-google" onclick="loginComGoogle()" class="text-xs bg-white text-pink-600 font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-pink-50 transition flex items-center gap-1.5">
+          <i class="fab fa-google text-red-500"></i> Entrar
+        </button>
+        <div id="user-info" class="hidden flex items-center gap-2">
+          <img id="user-photo" src="" class="w-7 h-7 rounded-full border-2 border-white/80 object-cover">
+          <button onclick="logoutGoogle()" class="text-[10px] bg-black/20 hover:bg-black/30 text-white px-2 py-1 rounded">Sair</button>
+        </div>
       </div>
     </div>
-    
-    <!-- ÁREA DE LOGIN DO GOOGLE -->
-    <div id="auth-container">
-      <button id="btn-login-google" onclick="loginComGoogle()" class="text-xs bg-white text-pink-600 font-bold px-3 py-1.5 rounded-lg shadow-md hover:bg-pink-50 transition flex items-center gap-1.5">
-        <i class="fab fa-google text-red-500"></i> Entrar
+  </header>
+
+  <!-- Conteúdo Principal com Abas -->
+  <main class="max-w-md mx-auto p-4 space-y-4">
+
+    <!-- ABA 1: DASHBOARD / INÍCIO -->
+    <section id="aba-inicio" class="tab-content space-y-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center space-x-4">
+        <div class="relative">
+          <img id="avatar-img" src="https://cdn-icons-png.flaticon.com/512/3082/3082060.png" class="w-16 h-16 rounded-full object-cover border-2 border-pink-400">
+        </div>
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">Olá, Família! 👋</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Acompanhe a rotina e as despesas da Bianca em um só lugar.</p>
+        </div>
+      </div>
+
+      <!-- Resumo Financeiro -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-2xl p-4 shadow-sm">
+          <p class="text-xs text-pink-100">Total do Mês</p>
+          <p id="dash-total-mes" class="text-xl font-extrabold mt-1">R$ 0,00</p>
+          <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Gastos da Bibi</span>
+        </div>
+        <div class="bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-2xl p-4 shadow-sm">
+          <p class="text-xs text-purple-100">Reports Hoje</p>
+          <p id="dash-reports-hoje" class="text-xl font-extrabold mt-1">0</p>
+          <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Rotina registrada</span>
+        </div>
+      </div>
+
+      <!-- Divisão de Gastos -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+        <h3 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+          <i class="fas fa-balance-scale text-pink-500"></i> Divisão de Gastos (Mês Atual)
+        </h3>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl">
+            <span class="font-medium text-slate-600">Total Papai:</span>
+            <span id="dash-total-papai" class="font-bold text-slate-800">R$ 0,00</span>
+          </div>
+          <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl">
+            <span class="font-medium text-slate-600">Total Mamãe:</span>
+            <span id="dash-total-mamae" class="font-bold text-slate-800">R$ 0,00</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA 2: FINANCEIRO -->
+    <section id="aba-financeiro" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <h3 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <i class="fas fa-plus-circle text-pink-500"></i> Novo Gasto
+        </h3>
+        <form id="form-gasto" onsubmit="adicionarGasto(event)" class="space-y-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Descrição</label>
+            <input type="text" id="gasto-desc" required placeholder="Ex: Fraldas, Mensalidade..." class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Valor (R$)</label>
+              <input type="number" step="0.01" id="gasto-valor" required placeholder="0,00" class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Categoria</label>
+              <select id="gasto-cat" class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+                <option value="Escola">Escola</option>
+                <option value="Saúde">Saúde</option>
+                <option value="Alimentação">Alimentação</option>
+                <option value="Lazer">Lazer</option>
+                <option value="Vestuário">Vestuário</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Data</label>
+              <input type="date" id="gasto-data" required class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Divisão</label>
+              <select id="gasto-divisao" class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+                <option value="50/50">Divisão 50% / 50%</option>
+                <option value="100% Papai">100% Papai</option>
+                <option value="100% Mamãe">100% Mamãe</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm py-3 rounded-xl shadow-sm transition">
+            Lançar Despesa
+          </button>
+        </form>
+      </div>
+
+      <!-- Lista de Gastos -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="text-sm font-bold text-slate-800">Histórico de Gastos</h3>
+          <input type="month" id="filtro-mes" onchange="renderizarGastos()" class="text-xs border border-slate-200 rounded-xl p-1.5 focus:outline-none">
+        </div>
+        <div id="lista-gastos" class="space-y-2"></div>
+      </div>
+    </section>
+
+    <!-- ABA 3: ROTINA & REPORTS -->
+    <section id="aba-rotina" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <h3 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <i class="fas fa-clipboard-check text-purple-500"></i> Check-in Diário
+        </h3>
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Data</label>
+            <input type="date" id="rotina-data" class="w-full text-xs border border-slate-200 rounded-xl p-2">
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
+              <input type="checkbox" id="check-refeicao" class="accent-pink-500 rounded">
+              <span class="text-slate-700">Alimentação OK</span>
+            </label>
+            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
+              <input type="checkbox" id="check-remedio" class="accent-pink-500 rounded">
+              <span class="text-slate-700">Medicamentos OK</span>
+            </label>
+            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
+              <input type="checkbox" id="check-licao" class="accent-pink-500 rounded">
+              <span class="text-slate-700">Tarefas OK</span>
+            </label>
+            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
+              <input type="checkbox" id="check-banho" class="accent-pink-500 rounded">
+              <span class="text-slate-700">Higiene / Banho</span>
+            </label>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Observações do Dia</label>
+            <textarea id="rotina-obs" rows="3" placeholder="Ex: Dia ótimo, tomou o remédio às 14h..." class="w-full border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"></textarea>
+          </div>
+          <button onclick="salvarEGerarReport()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs py-3 rounded-xl transition">
+            Gerar Report WhatsApp
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview Report -->
+      <div id="box-preview-report" class="hidden bg-emerald-50 rounded-2xl p-4 border border-emerald-100 space-y-3">
+        <h4 class="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+          <i class="fab fa-whatsapp text-emerald-600 text-sm"></i> Report Pronto para Envio
+        </h4>
+        <div id="texto-report" class="text-xs bg-white p-3 rounded-xl border border-emerald-200 whitespace-pre-line text-slate-700"></div>
+        <a id="whatsapp-link" target="_blank" class="block w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs py-2.5 text-center rounded-xl transition">
+          <i class="fab fa-whatsapp"></i> Abrir no WhatsApp
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Navegação Inferior -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 z-50">
+    <div class="max-w-md mx-auto grid grid-cols-3 gap-1">
+      <button onclick="trocarAba('inicio')" id="btn-inicio" class="flex flex-col items-center justify-center py-1.5 text-pink-500 font-bold text-[10px]">
+        <i class="fas fa-home text-base mb-0.5"></i> Início
       </button>
-      <div id="user-info" class="hidden flex items-center gap-2">
-        <img id="user-photo" src="" class="w-7 h-7 rounded-full border-2 border-white">
-        <button onclick="logoutGoogle()" class="text-[10px] bg-black/20 hover:bg-black/30 text-white px-2 py-1 rounded">Sair</button>
-      </div>
+      <button onclick="trocarAba('financeiro')" id="btn-financeiro" class="flex flex-col items-center justify-center py-1.5 text-slate-400 font-medium text-[10px]">
+        <i class="fas fa-wallet text-base mb-0.5"></i> Financeiro
+      </button>
+      <button onclick="trocarAba('rotina')" id="btn-rotina" class="flex flex-col items-center justify-center py-1.5 text-slate-400 font-medium text-[10px]">
+        <i class="fas fa-calendar-check text-base mb-0.5"></i> Rotina
+      </button>
     </div>
-  </div>
-</header>
+  </nav>
+
+  <!-- Firebase SDK e Lógica da Aplicação -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAPy71ptJA67PBVOcBdlBs5a9Mwcl8dVkA",
+      authDomain: "spacedabibi.firebaseapp.com",
+      projectId: "spacedabibi",
+      storageBucket: "spacedabibi.firebasestorage.app",
+      messagingSenderId: "548941959127",
+      appId: "1:548941959127:web:868af2e93fcf1e43fac592"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const provider = new GoogleAuthProvider();
+
+    window.loginComGoogle = function() {
+      signInWithPopup(auth, provider)
+        .then((result) => {
+          atualizarUIUsuario(result.user);
+        })
+        .catch((error) => {
+          console.error("Erro no login:", error);
+          alert("Erro ao logar com o Google. Certifique-se de que alexcsr93.github.io está autorizado no Firebase.");
+        });
+    };
+
+    window.logoutGoogle = function() {
+      signOut(auth).then(() => {
+        atualizarUIUsuario(null);
+      });
+    };
+
+    onAuthStateChanged(auth, (user) => {
+      atualizarUIUsuario(user);
+    });
+
+    function atualizarUIUsuario(user) {
+      const btnLogin = document.getElementById('btn-login-google');
+      const userInfo = document.getElementById('user-info');
+      const userPhoto = document.getElementById('user-photo');
+
+      if (user) {
+        if (btnLogin) btnLogin.classList.add('hidden');
+        if (userInfo) userInfo.classList.remove('hidden');
+        if (userPhoto) userPhoto.src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/3082/3082060.png';
+      } else {
+        if (btnLogin) btnLogin.classList.remove('hidden');
+        if (userInfo) userInfo.classList.add('hidden');
+      }
+    }
+  </script>
+
+  <script>
+    // Gerenciamento Local do App
+    let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
+    let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const hoje = new Date().toISOString().split('T')[0];
+      if (document.getElementById('gasto-data')) document.getElementById('gasto-data').value = hoje;
+      if (document.getElementById('rotina-data')) document.getElementById('rotina-data').value = hoje;
+      if (document.getElementById('filtro-mes')) document.getElementById('filtro-mes').value = hoje.substring(0, 7);
+
+      renderizarGeral();
+    });
+
+    function trocarAba(aba) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`aba-${aba}`).classList.remove('hidden');
+
+      ['inicio', 'financeiro', 'rotina'].forEach(b => {
+        const btn = document.getElementById(`btn-${b}`);
+        btn.className = b === aba 
+          ? 'flex flex-col items-center justify-center py-1.5 text-pink-500 font-bold text-[10px]' 
+          : 'flex flex-col items-center justify-center py-1.5 text-slate-400 font-medium text-[10px]';
+      });
+    }
+
+    function adicionarGasto(e) {
+      e.preventDefault();
+      const desc = document.getElementById('gasto-desc').value.trim();
+      const valor = parseFloat(document.getElementById('gasto-valor').value);
+      const cat = document.getElementById('gasto-cat').value;
+      const data = document.getElementById('gasto-data').value;
+      const divisao = document.getElementById('gasto-divisao').value;
+
+      if (!desc || isNaN(valor)) return;
+
+      gastos.unshift({ id: Date.now(), desc, valor, cat, data, divisao });
+      localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
+      document.getElementById('form-gasto').reset();
+      document.getElementById('gasto-data').value = new Date().toISOString().split('T')[0];
+      renderizarGeral();
+    }
+
+    function renderizarGeral() {
+      renderizarGastos();
+      atualizarDashboard();
+    }
+
+    function renderizarGastos() {
+      const lista = document.getElementById('lista-gastos');
+      const mesFiltro = document.getElementById('filtro-mes').value;
+      const filtrados = mesFiltro ? gastos.filter(g => g.data.startsWith(mesFiltro)) : gastos;
+
+      if (!filtrados.length) {
+        lista.innerHTML = '<p class="text-xs text-slate-400 py-3 text-center">Nenhum gasto neste mês.</p>';
+        return;
+      }
+
+      lista.innerHTML = filtrados.map(g => `
+        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+          <div>
+            <p class="font-bold text-slate-800">${g.desc}</p>
+            <p class="text-[10px] text-slate-500">${g.data} • <span class="text-pink-600 font-medium">${g.cat}</span> • ${g.divisao}</p>
+          </div>
+          <div class="text-right">
+            <p class="font-extrabold text-slate-800">R$ ${g.valor.toFixed(2)}</p>
+            <button onclick="removerGasto(${g.id})" class="text-[10px] text-rose-400">&times; Apagar</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function removerGasto(id) {
+      if (confirm('Excluir este gasto?')) {
+        gastos = gastos.filter(g => g.id !== id);
+        localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
+        renderizarGeral();
+      }
+    }
+
+    function atualizarDashboard() {
+      const hoje = new Date().toISOString().split('T')[0];
+      const mesAtual = hoje.substring(0, 7);
+      const gastosMes = gastos.filter(g => g.data.startsWith(mesAtual));
+      
+      let papai = 0, mamae = 0;
+      gastosMes.forEach(g => {
+        if (g.divisao === '50/50') { papai += g.valor / 2; mamae += g.valor / 2; }
+        else if (g.divisao === '100% Papai') { papai += g.valor; }
+        else if (g.divisao === '100% Mamãe') { mamae += g.valor; }
+      });
+
+      const totalMes = gastosMes.reduce((acc, g) => acc + g.valor, 0);
+      document.getElementById('dash-total-mes').innerText = `R$ ${totalMes.toFixed(2)}`;
+      document.getElementById('dash-total-papai').innerText = `R$ ${papai.toFixed(2)}`;
+      document.getElementById('dash-total-mamae').innerText = `R$ ${mamae.toFixed(2)}`;
+    }
+
+    function salvarEGerarReport() {
+      const dataStr = document.getElementById('rotina-data').value;
+      const ref = document.getElementById('check-refeicao').checked ? '✅ OK' : '❌ Pendente';
+      const rem = document.getElementById('check-remedio').checked ? '✅ OK' : '❌ Pendente';
+      const lic = document.getElementById('check-licao').checked ? '✅ OK' : '❌ Pendente';
+      const ban = document.getElementById('check-banho').checked ? '✅ OK' : '❌ Pendente';
+      const obs = document.getElementById('rotina-obs').value.trim();
+
+      const texto = `🌸 *REPORT DIÁRIO - SPACE DA BIBI* 🌸\n📅 Data: ${dataStr}\n\n*Rotina:*\n• Refeições: ${ref}\n• Medicamentos: ${rem}\n• Tarefas: ${lic}\n• Higiene: ${ban}\n\n*Obs:* ${obs || 'Tudo ótimo por aqui!'}`;
+
+      document.getElementById('texto-report').innerText = texto;
+      document.getElementById('box-preview-report').classList.remove('hidden');
+      document.getElementById('whatsapp-link').href = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+    }
+  </script>
+</body>
+</html>
