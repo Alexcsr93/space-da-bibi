@@ -1,17 +1,17 @@
-// Estados Locais e Sincronizados
+// Estados Locais e Sincronizados para o Space da Bibi
 let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
 let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
 
-// Capturar a foto e converter para exibição segura em qualquer dispositivo
+// Capturar a foto e converter para exibição segura em qualquer dispositivo (iOS / Android / PC)
 window.tratarFotoDrive = function(event) {
   const file = event.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    // Salva a imagem convertida para garantir que abra sem erros de link
     document.getElementById('gasto-drive').value = e.target.result;
-    document.getElementById('file-label-text').innerText = "Foto anexada com sucesso!";
+    const labelText = document.getElementById('file-label-text');
+    if (labelText) labelText.innerText = "Foto anexada com sucesso!";
   };
   reader.readAsDataURL(file);
 }
@@ -85,7 +85,7 @@ window.adicionarGasto = function() {
   const valor = parseFloat(document.getElementById('gasto-valor').value);
   const cat = document.getElementById('gasto-cat').value;
   const divisao = document.getElementById('gasto-divisao').value;
-  const drive = document.getElementById('gasto-drive').value.trim();
+  const drive = document.getElementById('gasto-drive') ? document.getElementById('gasto-drive').value.trim() : '';
 
   if (!desc || isNaN(valor) || valor <= 0) {
     alert('Preencha a descrição e um valor válido.');
@@ -100,8 +100,10 @@ window.adicionarGasto = function() {
 
   document.getElementById('gasto-desc').value = '';
   document.getElementById('gasto-valor').value = '';
-  document.getElementById('gasto-drive').value = '';
-  document.getElementById('file-label-text').innerText = 'Tirar Foto / Arquivo';
+  if (document.getElementById('gasto-drive')) document.getElementById('gasto-drive').value = '';
+  const labelText = document.getElementById('file-label-text');
+  if (labelText) labelText.innerText = 'Tirar Foto / Arquivo';
+  
   alert('Gasto salvo com sucesso!');
 }
 
@@ -157,5 +159,7 @@ window.copiarTextoReport = function() {
   alert('Report copiado para o WhatsApp!');
 }
 
-// Inicializa a tela assim que carregar
-renderizarGeral();
+// Inicializa a renderização assim que o script carregar
+document.addEventListener('DOMContentLoaded', () => {
+  renderizarGeral();
+});
