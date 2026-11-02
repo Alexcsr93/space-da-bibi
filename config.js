@@ -1,8 +1,7 @@
-// Space da Bibi - Lógica com Filtro de Meses e Tela Inicial
+// Space da Bibi - Configuração Definitiva com Visualização de Foto em Modal
 let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
 let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
 
-// Retorna o mês atual no formato YYYY-MM
 function mesAtualFormatado() {
   const agora = new Date();
   const ano = agora.getFullYear();
@@ -21,9 +20,18 @@ window.tratarFotoDrive = function(event) {
     const hiddenInput = document.getElementById('gasto-drive');
     if (hiddenInput) hiddenInput.value = e.target.result;
     const labelText = document.getElementById('file-label-text');
-    if (labelText) labelText.innerText = "Foto anexada!";
+    if (labelText) labelText.innerText = "Foto anexada com sucesso!";
   };
   reader.readAsDataURL(file);
+}
+
+window.abrirComprovanteModal = function(base64Data) {
+  const modal = document.getElementById('modal-foto');
+  const img = document.getElementById('img-comprovante-zoom');
+  if (modal && img) {
+    img.src = base64Data;
+    modal.classList.remove('hidden');
+  }
 }
 
 window.mudarFiltroMes = function(novoMes) {
@@ -32,26 +40,21 @@ window.mudarFiltroMes = function(novoMes) {
 }
 
 window.renderizarGeral = function() {
-  // Atualizar lista de meses disponíveis no select
   atualizarSeletorMeses();
 
-  // Filtra gastos do mês selecionado
   const gastosFiltrados = gastos.filter(g => {
     if (!g.dataIso) return false;
     return g.dataIso.startsWith(mesSelecionado);
   });
 
-  // Totais
   const totalGeral = gastos.reduce((acc, g) => acc + (g.valor || 0), 0);
   const totalMes = gastosFiltrados.reduce((acc, g) => acc + (g.valor || 0), 0);
 
-  // Home
   if(document.getElementById('home-total-geral')) document.getElementById('home-total-geral').innerText = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
   if(document.getElementById('home-total-mes')) document.getElementById('home-total-mes').innerText = `R$ ${totalMes.toFixed(2).replace('.', ',')}`;
   if(document.getElementById('home-qtd-gastos')) document.getElementById('home-qtd-gastos').innerText = `${gastosFiltrados.length} lançamentos neste mês`;
   if(document.getElementById('home-total-reports')) document.getElementById('home-total-reports').innerText = reports.length;
 
-  // Atividades Recentes na Home
   const homeRec = document.getElementById('home-recentes');
   if (homeRec) {
     if (gastos.length === 0) {
@@ -73,7 +76,6 @@ window.renderizarGeral = function() {
     }
   }
 
-  // Financeiro - Lista do Mês
   const listaG = document.getElementById('lista-gastos');
   if (listaG) {
     if (gastosFiltrados.length === 0) {
@@ -86,7 +88,7 @@ window.renderizarGeral = function() {
             <div>
               <p class="font-bold text-slate-800">${g.desc}</p>
               <p class="text-[10px] text-slate-500">${g.dataBr} • <span class="text-pink-600 font-semibold">${g.cat}</span> (${g.divisao})</p>
-              ${g.drive ? `<a href="${g.drive}" target="_blank" class="text-[10px] text-pink-600 hover:underline flex items-center gap-1 mt-0.5"><i data-lucide="image" class="w-3 h-3"></i> Ver Comprovante</a>` : ''}
+              ${g.drive ? `<button onclick="abrirComprovanteModal('${g.drive}')" class="text-[10px] text-pink-600 hover:underline flex items-center gap-1 mt-0.5 text-left font-semibold"><i data-lucide="image" class="w-3 h-3"></i> Ver Comprovante</button>` : ''}
             </div>
             <div class="flex items-center gap-2">
               <span class="font-black text-slate-900">R$ ${g.valor.toFixed(2).replace('.', ',')}</span>
@@ -99,7 +101,6 @@ window.renderizarGeral = function() {
     }
   }
 
-  // Reports
   const listaRep = document.getElementById('lista-reports');
   if (listaRep) {
     if (reports.length === 0) {
@@ -128,7 +129,6 @@ function atualizarSeletorMeses() {
   const select = document.getElementById('filtro-mes');
   if (!select) return;
 
-  // Extrair todos os meses únicos presentes nos gastos + mês atual
   let mesesSet = new Set();
   mesesSet.add(mesAtualFormatado());
   gastos.forEach(g => {
@@ -169,7 +169,7 @@ window.adicionarGasto = function() {
 
   const desc = descElem.value.trim();
   const valor = parseFloat(valorElem.value);
-  const dataIso = dataElem.value; // Formato YYYY-MM-DD
+  const dataIso = dataElem.value;
   const cat = catElem ? catElem.value : 'Outros';
   const divisao = divisaoElem ? divisaoElem.value : 'Dividido 50/50';
   const drive = driveElem ? driveElem.value.trim() : '';
@@ -179,7 +179,6 @@ window.adicionarGasto = function() {
     return;
   }
 
-  // Formatar data para exibição BR (DD/MM/YYYY)
   let partes = dataIso.split('-');
   let dataBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
 
@@ -187,8 +186,6 @@ window.adicionarGasto = function() {
   gastos.unshift(novo);
   
   localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
-  
-  // Atualiza o filtro para o mês do gasto cadastrado para o usuário ver na hora
   mesSelecionado = dataIso.substring(0, 7);
   renderizarGeral();
 
