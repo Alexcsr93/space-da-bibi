@@ -1,6 +1,6 @@
-// Importações da biblioteca de Autenticação do Firebase SDK
-import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// Configuração do Firebase & Autenticação Google
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAPy71ptJA67PBVOcBdlBs5a9Mwcl8dVkA",
@@ -11,42 +11,34 @@ const firebaseConfig = {
   appId: "1:548941959127:web:868af2e93fcf1e43fac592"
 };
 
-// Inicialização do Firebase Auth
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 
-// Função para efetuar login com a conta do Google via Popup
+// Funções globais de Login e Logout
 window.loginComGoogle = function() {
   signInWithPopup(auth, provider)
     .then((result) => {
-      const user = result.user;
-      console.log("Logado com sucesso:", user.displayName);
-      atualizarUIUsuario(user);
+      console.log("Usuário logado:", result.user);
+      atualizarUIUsuario(result.user);
     })
     .catch((error) => {
-      console.error("Erro no login com Google:", error);
-      alert("Erro ao realizar o login com a conta do Google.");
+      console.error("Erro no login:", error);
+      alert("Erro ao realizar o login com o Google. Verifique se o domínio alexcsr93.github.io está autorizado no Firebase.");
     });
 };
 
-// Função para Deslogar
 window.logoutGoogle = function() {
   signOut(auth).then(() => {
     atualizarUIUsuario(null);
   });
 };
 
-// Monitorar estado da Autenticação em Tempo Real
+// Monitora o login do usuário
 onAuthStateChanged(auth, (user) => {
-  if (user) {
-    atualizarUIUsuario(user);
-  } else {
-    atualizarUIUsuario(null);
-  }
+  atualizarUIUsuario(user);
 });
 
-// Função para atualizar a interface com os dados da conta logada
 function atualizarUIUsuario(user) {
   const btnLogin = document.getElementById('btn-login-google');
   const userInfo = document.getElementById('user-info');
