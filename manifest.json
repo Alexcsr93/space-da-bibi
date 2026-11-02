@@ -1,20 +1,15 @@
 {
-  "short_name": "Space Bibi",
-  "name": "Space da Bibi - Gestão e Rotina",
+  "name": "Space da Bibi",
+  "short_name": "SpaceBibi",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f1f5f9",
+  "theme_color": "#db2777",
   "icons": [
     {
-      "src": "https://cdn-icons-png.flaticon.com/512/3082/3082060.png",
-      "type": "image/png",
-      "sizes": "192x192"
-    },
-    {
-      "src": "https://cdn-icons-png.flaticon.com/512/3082/3082060.png",
-      "type": "image/png",
-      "sizes": "512x512"
+      "src": "https://cdn-icons-png.flaticon.com/512/2921/2921222.png",
+      "sizes": "512x512",
+      "type": "image/png"
     }
-  ],
-  "start_url": "./index.html",
-  "background_color": "#ffffff",
-  "theme_color": "#ec4899",
-  "display": "standalone"
+  ]
 }

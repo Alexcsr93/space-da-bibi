@@ -1,7 +1,224 @@
-<!-- SDKs do Firebase -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-  import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-  // O restante do seu código ou o config.js será chamado aqui ou modularizado
-</script>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Space da Bibi - Gestão & Convivência</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#db2777">
+</head>
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-20 font-sans">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-pink-600 to-purple-600 text-white p-4 shadow-md sticky top-0 z-50">
+    <div class="max-w-md mx-auto flex justify-between items-center">
+      <div class="flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-6 h-6"></i>
+        <h1 class="font-bold text-lg tracking-wide">Space da Bibi</h1>
+      </div>
+      <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">v1.1</span>
+    </div>
+  </header>
+
+  <!-- Navigation Tabs -->
+  <nav class="max-w-md mx-auto px-4 mt-4">
+    <div class="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
+      <button onclick="mudarAba('financeiro')" id="btn-financeiro" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 bg-pink-600 text-white shadow-sm">
+        <i data-lucide="wallet" class="w-4 h-4"></i> Financeiro
+      </button>
+      <button onclick="mudarAba('rotina')" id="btn-rotina" class="flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-50">
+        <i data-lucide="calendar-check" class="w-4 h-4"></i> Rotina & Report
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
+  <main class="max-w-md mx-auto p-4 space-y-4">
+
+    <!-- ABA FINANCEIRO -->
+    <section id="aba-financeiro" class="space-y-4">
+      <!-- Cards Resumo -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Gasto</p>
+          <p id="home-total-gasto" class="text-xl font-black text-pink-600 mt-1">R$ 0,00</p>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Lançamentos</p>
+          <p id="fin-registros" class="text-xl font-black text-purple-700 mt-1">0</p>
+        </div>
+      </div>
+
+      <!-- Novo Gasto -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-pink-600"></i>
+          <h2 class="font-bold text-sm text-slate-800">Novo Lançamento</h2>
+        </div>
+        
+        <div class="space-y-2 text-xs">
+          <div>
+            <label class="font-semibold text-slate-600">Descrição</label>
+            <input type="text" id="gasto-desc" placeholder="Ex: Farmácia, Roupas, Mensalidade" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+          </div>
+          
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-semibold text-slate-600">Valor (R$)</label>
+              <input type="number" step="0.01" id="gasto-valor" placeholder="0,00" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+            </div>
+            <div>
+              <label class="font-semibold text-slate-600">Categoria</label>
+              <select id="gasto-cat" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <option value="Escola / Estudos">Escola / Estudos</option>
+                <option value="Saúde / Farmácia">Saúde / Farmácia</option>
+                <option value="Alimentação">Alimentação</option>
+                <option value="Lazer / Passeios">Lazer / Passeios</option>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-semibold text-slate-600">Divisão</label>
+              <select id="gasto-divisao" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <option value="Dividido 50/50">Dividido 50/50</option>
+                <option value="Pago por mim">Pago por mim</option>
+                <option value="Pago pela Mãe">Pago pela Mãe</option>
+              </select>
+            </div>
+            <div>
+              <label class="font-semibold text-slate-600">Comprovante (Foto)</label>
+              <label class="flex items-center justify-center gap-1.5 w-full mt-1 p-2.5 bg-slate-50 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-100 transition text-slate-600">
+                <i data-lucide="camera" class="w-4 h-4 text-pink-600"></i>
+                <span id="file-label-text" class="truncate">Tirar Foto</span>
+                <input type="file" accept="image/*" class="hidden" onchange="tratarFotoDrive(event)">
+              </label>
+              <input type="hidden" id="gasto-drive">
+            </div>
+          </div>
+
+          <button onclick="adicionarGasto()" class="w-full mt-2 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+            <i data-lucide="check" class="w-4 h-4"></i> Salvar Despesa
+          </button>
+        </div>
+      </div>
+
+      <!-- Histórico de Gastos -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h3 class="font-bold text-sm text-slate-800">Histórico de Gastos</h3>
+          <button onclick="exportarCSV()" class="text-xs text-pink-600 hover:underline flex items-center gap-1 font-semibold">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar CSV
+          </button>
+        </div>
+        <div id="lista-gastos" class="space-y-2 max-h-72 overflow-y-auto">
+          <p class="text-xs text-center text-slate-400 py-3">Nenhum gasto registrado.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ABA ROTINA & REPORT -->
+    <section id="aba-rotina" class="space-y-4 hidden">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <i data-lucide="file-text" class="w-5 h-5 text-purple-700"></i>
+          <h2 class="font-bold text-sm text-slate-800">Gerador de Report Diário</h2>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-semibold text-slate-600">Data</label>
+              <input type="date" id="rotina-data" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+              <label class="font-semibold text-slate-600">Escola / Atividade</label>
+              <input type="text" id="rotina-escola" placeholder="Ex: Colégio X / Em casa" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+          </div>
+
+          <div class="space-y-1.5 pt-1">
+            <label class="font-semibold text-slate-600">Checklist do Dia</label>
+            <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="check-refeicao" class="w-4 h-4 text-purple-600 rounded"> Refeições OK
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="check-remedio" class="w-4 h-4 text-purple-600 rounded"> Remédios / Vit.
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="check-licao" class="w-4 h-4 text-purple-600 rounded"> Lição / Tarefas
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="check-banho" class="w-4 h-4 text-purple-600 rounded"> Banho / Higiene
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label class="font-semibold text-slate-600">Observações / Destaques do Dia</label>
+            <textarea id="rotina-obs" rows="2" placeholder="Como foi o dia, humor, novidades..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+          </div>
+
+          <button onclick="salvarEGerarReport()" class="w-full mt-2 py-3 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+            <i data-lucide="share-2" class="w-4 h-4"></i> Gerar & Salvar Report
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview do Report -->
+      <div id="box-preview-report" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 hidden">
+        <h3 class="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">Preview para WhatsApp</h3>
+        <div id="texto-report" class="p-3 bg-slate-50 rounded-xl text-xs whitespace-pre-line font-mono text-slate-700 border border-slate-200"></div>
+        <div class="flex gap-2">
+          <button onclick="copiarTextoReport()" class="flex-1 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 hover:bg-slate-900 transition">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Texto
+          </button>
+          <a id="whatsapp-link" href="#" target="_blank" class="flex-1 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 hover:bg-emerald-700 transition">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i> Enviar WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <!-- Histórico de Reports -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <h3 class="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">Reports Salvos</h3>
+        <div id="lista-reports" class="space-y-2 max-h-72 overflow-y-auto">
+          <p class="text-xs text-center text-slate-400 py-3">Nenhum report salvo ainda.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
+    }
+    
+    function mudarAba(aba) {
+      const f = document.getElementById('aba-financeiro');
+      const r = document.getElementById('aba-rotina');
+      const bf = document.getElementById('btn-financeiro');
+      const br = document.getElementById('btn-rotina');
+
+      if (aba === 'financeiro') {
+        f.classList.remove('hidden');
+        r.classList.add('hidden');
+        bf.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 bg-pink-600 text-white shadow-sm";
+        br.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-50";
+      } else {
+        r.classList.remove('hidden');
+        f.classList.add('hidden');
+        br.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 bg-purple-700 text-white shadow-sm";
+        bf.className = "flex-1 py-2.5 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 text-slate-600 hover:bg-slate-50";
+      }
+    }
+  </script>
+</body>
+</html>

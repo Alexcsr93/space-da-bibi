@@ -1,17 +1,17 @@
-// Estados Locais e Sincronizados para o Space da Bibi
+// Space da Bibi - Configuração Segura e Estável
 let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
 let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
 
-// Capturar a foto e converter para exibição segura em qualquer dispositivo (iOS / Android / PC)
 window.tratarFotoDrive = function(event) {
   const file = event.target.files[0];
   if (!file) return;
 
   const reader = new FileReader();
   reader.onload = function(e) {
-    document.getElementById('gasto-drive').value = e.target.result;
+    const hiddenInput = document.getElementById('gasto-drive');
+    if (hiddenInput) hiddenInput.value = e.target.result;
     const labelText = document.getElementById('file-label-text');
-    if (labelText) labelText.innerText = "Foto anexada com sucesso!";
+    if (labelText) labelText.innerText = "Foto anexada!";
   };
   reader.readAsDataURL(file);
 }
@@ -20,23 +20,18 @@ window.renderizarGeral = function() {
   const total = gastos.reduce((acc, g) => acc + (g.valor || 0), 0);
   
   if(document.getElementById('home-total-gasto')) document.getElementById('home-total-gasto').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
-  if(document.getElementById('home-total-reports')) document.getElementById('home-total-reports').innerText = reports.length;
-  if(document.getElementById('fin-total')) document.getElementById('fin-total').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
   if(document.getElementById('fin-registros')) document.getElementById('fin-registros').innerText = gastos.length;
 
   const listaG = document.getElementById('lista-gastos');
-  const homeRec = document.getElementById('home-recentes');
   const listaRep = document.getElementById('lista-reports');
 
-  if (listaG && homeRec) {
+  if (listaG) {
     if (gastos.length === 0) {
       listaG.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhum gasto registrado.</p>';
-      homeRec.innerHTML = '<p class="text-xs text-slate-400 text-center py-3">Nenhuma atividade recente.</p>';
     } else {
       let htmlGastos = '';
-      let htmlHome = '';
-      gastos.slice(0, 5).forEach((g, index) => {
-        const cardHtml = `
+      gastos.forEach((g) => {
+        htmlGastos += `
           <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
             <div>
               <p class="font-bold text-slate-800">${g.desc}</p>
@@ -45,15 +40,12 @@ window.renderizarGeral = function() {
             </div>
             <div class="flex items-center gap-2">
               <span class="font-black text-slate-900">R$ ${g.valor.toFixed(2).replace('.', ',')}</span>
-              <button onclick="removerGasto(${g.id})" class="text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              <button onclick="removerGasto(${g.id})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
             </div>
           </div>
         `;
-        htmlGastos += cardHtml;
-        if (index < 3) htmlHome += cardHtml;
       });
       listaG.innerHTML = htmlGastos;
-      homeRec.innerHTML = htmlHome;
     }
   }
 
@@ -67,7 +59,7 @@ window.renderizarGeral = function() {
           <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1">
             <div class="flex justify-between items-center font-bold text-purple-900">
               <span>📅 ${r.data} (Escola: ${r.escola})</span>
-              <button onclick="removerReport(${r.id})" class="text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              <button onclick="removerReport(${r.id})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
             </div>
             <p class="text-slate-600 text-[11px] whitespace-pre-line">${r.texto}</p>
           </div>
@@ -81,11 +73,19 @@ window.renderizarGeral = function() {
 }
 
 window.adicionarGasto = function() {
-  const desc = document.getElementById('gasto-desc').value.trim();
-  const valor = parseFloat(document.getElementById('gasto-valor').value);
-  const cat = document.getElementById('gasto-cat').value;
-  const divisao = document.getElementById('gasto-divisao').value;
-  const drive = document.getElementById('gasto-drive') ? document.getElementById('gasto-drive').value.trim() : '';
+  const descElem = document.getElementById('gasto-desc');
+  const valorElem = document.getElementById('gasto-valor');
+  const catElem = document.getElementById('gasto-cat');
+  const divisaoElem = document.getElementById('gasto-divisao');
+  const driveElem = document.getElementById('gasto-drive');
+
+  if (!descElem || !valorElem) return;
+
+  const desc = descElem.value.trim();
+  const valor = parseFloat(valorElem.value);
+  const cat = catElem ? catElem.value : 'Outros';
+  const divisao = divisaoElem ? divisaoElem.value : 'Dividido 50/50';
+  const drive = driveElem ? driveElem.value.trim() : '';
 
   if (!desc || isNaN(valor) || valor <= 0) {
     alert('Preencha a descrição e um valor válido.');
@@ -98,11 +98,11 @@ window.adicionarGasto = function() {
   localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
   renderizarGeral();
 
-  document.getElementById('gasto-desc').value = '';
-  document.getElementById('gasto-valor').value = '';
-  if (document.getElementById('gasto-drive')) document.getElementById('gasto-drive').value = '';
+  descElem.value = '';
+  valorElem.value = '';
+  if (driveElem) driveElem.value = '';
   const labelText = document.getElementById('file-label-text');
-  if (labelText) labelText.innerText = 'Tirar Foto / Arquivo';
+  if (labelText) labelText.innerText = 'Tirar Foto';
   
   alert('Gasto salvo com sucesso!');
 }
@@ -121,8 +121,10 @@ window.removerReport = function(id) {
 
 window.exportarCSV = function() {
   if (gastos.length === 0) return alert('Sem dados para exportar.');
-  let csv = 'Data;Descrição;Categoria;Valor;Divisão\n';
-  gastos.forEach(g => { csv += `${g.data};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao}\n`; });
+  let csv = 'Data;Descrição;Categoria;Valor;Divisão
+';
+  gastos.forEach(g => { csv += `${g.data};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao}
+`; });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -133,8 +135,12 @@ window.exportarCSV = function() {
 }
 
 window.salvarEGerarReport = function() {
-  const dataStr = document.getElementById('rotina-data').value;
-  const escola = document.getElementById('rotina-escola').value;
+  const dataElem = document.getElementById('rotina-data');
+  const escolaElem = document.getElementById('rotina-escola');
+  if (!dataElem || !escolaElem) return;
+
+  const dataStr = dataElem.value || new Date().toLocaleDateString('pt-BR');
+  const escola = escolaElem.value || 'Escola';
   const ref = document.getElementById('check-refeicao').checked ? '✅ OK' : '❌ Pendente';
   const rem = document.getElementById('check-remedio').checked ? '✅ OK' : '❌ Pendente';
   const lic = document.getElementById('check-licao').checked ? '✅ OK' : '❌ Pendente';
@@ -155,11 +161,15 @@ window.salvarEGerarReport = function() {
 }
 
 window.copiarTextoReport = function() {
-  navigator.clipboard.writeText(document.getElementById('texto-report').innerText);
-  alert('Report copiado para o WhatsApp!');
+  const txt = document.getElementById('texto-report').innerText;
+  navigator.clipboard.writeText(txt);
+  alert('Report copiado para a área de transferência!');
 }
 
-// Inicializa a renderização assim que o script carregar
 document.addEventListener('DOMContentLoaded', () => {
+  const hoje = new Date().toISOString().split('T')[0];
+  if (document.getElementById('rotina-data')) {
+    document.getElementById('rotina-data').value = hoje;
+  }
   renderizarGeral();
 });
