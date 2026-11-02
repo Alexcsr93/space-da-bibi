@@ -1,102 +1,22 @@
-// Cole aqui o ID do Cliente extraído do seu arquivo JSON do OAuth:
-const CLIENT_ID = '906116760120-qolkugei40su4j95u56m0u0oa4804i1i.apps.googleusercontent.com';
-const SCOPES = 'https://www.googleapis.com/auth/drive.file';
-
-let tokenClient;
-let gapiInited = false;
-let gInited = false;
-let driveAccessToken = null;
-
-function gapiLoaded() {
-  gapi.load('client', async () => {
-    await gapi.client.init({
-      discoveryDocs: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
-    });
-    gapiInited = true;
-  });
-}
-
-function gisLoaded() {
-  tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: CLIENT_ID,
-    scope: SCOPES,
-    callback: (resp) => {
-      if (resp.error) return alert('Erro ao autenticar no Google Drive: ' + resp.error);
-      driveAccessToken = resp.access_token;
-      document.getElementById('drive-status').innerText = "Drive Conectado!";
-      alert('Google Drive conectado com sucesso!');
-    },
-  });
-  gInited = true;
-}
-
-function conectarGoogleDrive() {
-  if (tokenClient) {
-    tokenClient.requestAccessToken({ prompt: 'consent' });
-  } else {
-    alert('As bibliotecas do Google ainda estão carregando. Tente novamente em alguns segundos.');
-  }
-}
-
 // Estados Locais
 let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
 let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
 
-async function tratarFotoDrive(event) {
+// Função que converte a foto tirada na hora para visualização imediata e segura
+function tratarFotoDrive(event) {
   const file = event.target.files[0];
   if (!file) return;
 
-  if (!driveAccessToken) {
-    alert('Por favor, clique em "Conectar Drive" no topo antes de enviar o comprovante.');
-    return;
-  }
+  document.getElementById('file-label-text').innerText = "Processando foto...";
 
-  document.getElementById('file-label-text').innerText = "Enviando pro Drive...";
-
-  try {
-    // 1. Upload do arquivo
-    const metadata = {
-      name: `Comprovante_Bibi_${Date.now()}_${file.name}`,
-      mimeType: file.type
-    };
-
-    const formData = new FormData();
-    formData.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-    formData.append('file', file);
-
-    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,webViewLink', {
-      method: 'POST',
-      headers: new Headers({ 'Authorization': 'Bearer ' + driveAccessToken }),
-      body: formData
-    });
-
-    const data = await res.json();
-
-    if (data.id && data.webViewLink) {
-      // 2. Tornar o arquivo público para visualização com o link
-      await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`, {
-        method: 'POST',
-        headers: new Headers({
-          'Authorization': 'Bearer ' + driveAccessToken,
-          'Content-Type': 'application/json'
-        }),
-        body: JSON.stringify({
-          role: 'reader',
-          type: 'anyone'
-        })
-      });
-
-      document.getElementById('gasto-drive').value = data.webViewLink;
-      document.getElementById('file-label-text').innerText = "Foto enviada!";
-      alert('Foto enviada e liberada com sucesso no seu Google Drive!');
-    } else {
-      throw new Error('Não foi possível obter o link do arquivo.');
-    }
-  } catch (err) {
-    console.error(err);
-    alert('Erro ao enviar foto para o Drive: ' + err.message);
-    document.getElementById('file-label-text').innerText = "Erro no upload";
-  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // Salva a imagem convertida em string Base64 no input oculto
+    document.getElementById('gasto-drive').value = e.target.result;
+    document.getElementById('file-label-text').innerText = "Foto anexada com sucesso!";
+    alert('Foto carregada e pronta para salvar!');
+  };
+  reader.readAsDataURL(file);
 }
 
 function renderizarGeral() {
@@ -123,7 +43,7 @@ function renderizarGeral() {
           <div>
             <p class="font-bold text-slate-800">${g.desc}</p>
             <p class="text-[10px] text-slate-500">${g.data} • <span class="text-pink-600 font-semibold">${g.cat}</span> (${g.divisao})</p>
-            ${g.drive ? `<a href="${g.drive}" target="_blank" class="text-[10px] text-blue-600 hover:underline flex items-center gap-1 mt-0.5"><i data-lucide="external-link" class="w-3 h-3"></i> Abrir Comprovante no Drive</a>` : ''}
+            ${g.drive ? `<a href="${g.drive}" target="_blank" class="text-[10px] text-pink-600 hover:underline flex items-center gap-1 mt-0.5"><i data-lucide="image" class="w-3 h-3"></i> Ver Comprovante / Foto</a>` : ''}
           </div>
           <div class="flex items-center gap-2">
             <span class="font-black text-slate-900">R$ ${g.valor.toFixed(2).replace('.', ',')}</span>
@@ -181,7 +101,7 @@ function adicionarGasto() {
   document.getElementById('gasto-valor').value = '';
   document.getElementById('gasto-drive').value = '';
   document.getElementById('file-label-text').innerText = 'Tirar Foto / Arquivo';
-  alert('Gasto salvo e comprovante vinculado!');
+  alert('Gasto salvo e comprovante vinculado com sucesso!');
 }
 
 function removerGasto(id) {
@@ -198,8 +118,8 @@ function removerReport(id) {
 
 function exportarCSV() {
   if (gastos.length === 0) return alert('Sem dados para exportar.');
-  let csv = 'Data;Descrição;Categoria;Valor;Divisão;Drive\n';
-  gastos.forEach(g => { csv += `${g.data};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao};${g.drive || ''}\n`; });
+  let csv = 'Data;Descrição;Categoria;Valor;Divisão\n';
+  gastos.forEach(g => { csv += `${g.data};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao}\n`; });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
