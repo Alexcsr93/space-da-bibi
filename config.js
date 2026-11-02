@@ -54,6 +54,7 @@ async function tratarFotoDrive(event) {
   document.getElementById('file-label-text').innerText = "Enviando pro Drive...";
 
   try {
+    // 1. Upload do arquivo
     const metadata = {
       name: `Comprovante_Bibi_${Date.now()}_${file.name}`,
       mimeType: file.type
@@ -71,10 +72,23 @@ async function tratarFotoDrive(event) {
 
     const data = await res.json();
 
-    if (data.webViewLink) {
+    if (data.id && data.webViewLink) {
+      // 2. Tornar o arquivo público para visualização com o link
+      await fetch(`https://www.googleapis.com/drive/v3/files/${data.id}/permissions`, {
+        method: 'POST',
+        headers: new Headers({
+          'Authorization': 'Bearer ' + driveAccessToken,
+          'Content-Type': 'application/json'
+        }),
+        body: JSON.stringify({
+          role: 'reader',
+          type: 'anyone'
+        })
+      });
+
       document.getElementById('gasto-drive').value = data.webViewLink;
       document.getElementById('file-label-text').innerText = "Foto enviada!";
-      alert('Foto enviada com sucesso para o seu Google Drive!');
+      alert('Foto enviada e liberada com sucesso no seu Google Drive!');
     } else {
       throw new Error('Não foi possível obter o link do arquivo.');
     }
