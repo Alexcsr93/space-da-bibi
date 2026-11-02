@@ -1,24 +1,6 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
-
-// Suas credenciais do Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyAPy71ptJA67PBVOcBdlBs5a9Mwcl8dVkA",
-  authDomain: "spacedabibi.firebaseapp.com",
-  projectId: "spacedabibi",
-  storageBucket: "spacedabibi.firebasestorage.app",
-  messagingSenderId: "548941959127",
-  appId: "1:548941959127:web:868af2e93fcf1e43fac592"
-};
-
-// Inicializar Firebase
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-let gastos = [];
-let reports = [];
+// Estados Locais / Nuvem
+let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
+let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
 let arquivoFotoParaEnviar = null;
 
 // Capturar a foto selecionada
@@ -26,103 +8,29 @@ window.tratarFotoDrive = function(event) {
   const file = event.target.files[0];
   if (!file) return;
   arquivoFotoParaEnviar = file;
-  document.getElementById('file-label-text').innerText = "Foto selecionada (Pronta para envio)";
+  document.getElementById('file-label-text').innerText = "Foto pronta para envio!";
 }
 
-// Ouvir dados em tempo real do Firestore
-onSnapshot(collection(db, "gastos"), (snapshot) => {
-  gastos = snapshot.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
-  renderizarGeral();
-});
+// Função auxiliar para enviar a imagem para um servidor de nuvem público e seguro via API
+async function enviarImagemParaNuvem(file) {
+  const formData = new FormData();
+  formData.append("image", file);
 
-onSnapshot(collection(db, "reports"), (snapshot) => {
-  reports = snapshot.docs.map(doc => ({ idDoc: doc.id, ...doc.data() }));
-  renderizarGeral();
-});
-
-window.adicionarGasto = async function() {
-  const desc = document.getElementById('gasto-desc').value.trim();
-  const valor = parseFloat(document.getElementById('gasto-valor').value);
-  const cat = document.getElementById('gasto-cat').value;
-  const divisao = document.getElementById('gasto-divisao').value;
-
-  if (!desc || isNaN(valor) || valor <= 0) {
-    alert('Preencha a descrição e um valor válido.');
-    return;
-  }
-
-  let driveUrl = "";
-  document.getElementById('file-label-text').innerText = "Salvando na nuvem...";
-
-  try {
-    // Se houver foto, envia para o Firebase Storage
-    if (arquivoFotoParaEnviar) {
-      const storageRef = ref(storage, `comprovantes/${Date.now()}_${arquivoFotoParaEnviar.name}`);
-      const snapshot = await uploadBytes(storageRef, arquivoFotoParaEnviar);
-      driveUrl = await getDownloadURL(snapshot.ref);
-    }
-
-    // Salva o gasto no Firestore
-    await addDoc(collection(db, "gastos"), {
-      id: Date.now(),
-      data: new Date().toLocaleDateString('pt-BR'),
-      desc,
-      valor,
-      cat,
-      divisao,
-      drive: driveUrl
-    });
-
-    document.getElementById('gasto-desc').value = '';
-    document.getElementById('gasto-valor').value = '';
-    arquivoFotoParaEnviar = null;
-    document.getElementById('file-label-text').innerText = 'Tirar Foto / Arquivo';
-    alert('Gasto e comprovante salvos na nuvem com sucesso!');
-  } catch (err) {
-    console.error(err);
-    alert('Erro ao salvar gasto: ' + err.message);
-    document.getElementById('file-label-text').innerText = 'Erro no envio';
-  }
-}
-
-window.removerGasto = async function(idDoc) {
-  if (confirm('Deseja realmente excluir este gasto?')) {
-    await deleteDoc(doc(db, "gastos", idDoc));
-  }
-}
-
-window.salvarEGerarReport = async function() {
-  const dataStr = document.getElementById('rotina-data').value;
-  const escola = document.getElementById('rotina-escola').value;
-  const ref = document.getElementById('check-refeicao').checked ? '✅ OK' : '❌ Pendente';
-  const rem = document.getElementById('check-remedio').checked ? '✅ OK' : '❌ Pendente';
-  const lic = document.getElementById('check-licao').checked ? '✅ OK' : '❌ Pendente';
-  const ban = document.getElementById('check-banho').checked ? '✅ OK' : '❌ Pendente';
-  const obs = document.getElementById('rotina-obs').value.trim();
-
-  const texto = `🌸 *REPORT DIÁRIO - SPACE DA BIBI* 🌸\n📅 Data: ${dataStr} | Escola: ${escola}\n\n*Rotina:*\n• Refeições: ${ref}\n• Medicamentos: ${rem}\n• Tarefas: ${lic}\n• Higiene: ${ban}\n\n*Obs:* ${obs || 'Tudo ótimo por aqui!'}`;
-  
-  await addDoc(collection(db, "reports"), {
-    id: Date.now(),
-    data: dataStr,
-    escola,
-    texto
+  // Usando uma API pública gratuita e segura para hospedagem temporária/permanente de recibos
+  const response = await fetch("https://api.imgbb.com/1/upload?key=6d2038744d03d4060872288340798b11", {
+    method: "POST",
+    body: formData
   });
 
-  document.getElementById('texto-report').innerText = texto;
-  document.getElementById('box-preview-report').classList.remove('hidden');
-  
-  const encodedText = encodeURIComponent(texto);
-  document.getElementById('whatsapp-link').href = `https://api.whatsapp.com/send?text=${encodedText}`;
-}
-
-window.removerReport = async function(idDoc) {
-  if (confirm('Deseja excluir este report?')) {
-    await deleteDoc(doc(db, "reports", idDoc));
+  const data = await response.json();
+  if (data && data.success) {
+    return data.data.url; // Retorna o link direto da imagem na nuvem
+  } else {
+    throw new Error("Falha ao enviar a imagem.");
   }
 }
 
-function renderizarGeral() {
+window.renderizarGeral = function() {
   const total = gastos.reduce((acc, g) => acc + (g.valor || 0), 0);
   
   if(document.getElementById('home-total-gasto')) document.getElementById('home-total-gasto').innerText = `R$ ${total.toFixed(2).replace('.', ',')}`;
@@ -147,11 +55,11 @@ function renderizarGeral() {
             <div>
               <p class="font-bold text-slate-800">${g.desc}</p>
               <p class="text-[10px] text-slate-500">${g.data} • <span class="text-pink-600 font-semibold">${g.cat}</span> (${g.divisao})</p>
-              ${g.drive ? `<a href="${g.drive}" target="_blank" class="text-[10px] text-blue-600 hover:underline flex items-center gap-1 mt-0.5"><i data-lucide="external-link" class="w-3 h-3"></i> Abrir Comprovante na Nuvem</a>` : ''}
+              ${g.drive ? `<a href="${g.drive}" target="_blank" class="text-[10px] text-pink-600 hover:underline flex items-center gap-1 mt-0.5"><i data-lucide="image" class="w-3 h-3"></i> Ver Comprovante na Nuvem</a>` : ''}
             </div>
             <div class="flex items-center gap-2">
               <span class="font-black text-slate-900">R$ ${g.valor.toFixed(2).replace('.', ',')}</span>
-              <button onclick="removerGasto('${g.idDoc}')" class="text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              <button onclick="removerGasto(${g.id})" class="text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
             </div>
           </div>
         `;
@@ -173,7 +81,7 @@ function renderizarGeral() {
           <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1">
             <div class="flex justify-between items-center font-bold text-purple-900">
               <span>📅 ${r.data} (Escola: ${r.escola})</span>
-              <button onclick="removerReport('${r.idDoc}')" class="text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              <button onclick="removerReport(${r.id})" class="text-slate-400 hover:text-red-500"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
             </div>
             <p class="text-slate-600 text-[11px] whitespace-pre-line">${r.texto}</p>
           </div>
@@ -184,6 +92,61 @@ function renderizarGeral() {
   }
 
   if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+window.adicionarGasto = async function() {
+  const desc = document.getElementById('gasto-desc').value.trim();
+  const valor = parseFloat(document.getElementById('gasto-valor').value);
+  const cat = document.getElementById('gasto-cat').value;
+  const divisao = document.getElementById('gasto-divisao').value;
+
+  if (!desc || isNaN(valor) || valor <= 0) {
+    alert('Preencha a descrição e um valor válido.');
+    return;
+  }
+
+  let imageUrl = "";
+  if (arquivoFotoParaEnviar) {
+    document.getElementById('file-label-text').innerText = "Enviando foto para a nuvem...";
+    try {
+      imageUrl = await enviarImagemParaNuvem(arquivoFotoParaEnviar);
+    } catch (err) {
+      console.error(err);
+      alert('Erro ao enviar a foto. O gasto será salvo sem imagem.');
+    }
+  }
+
+  const novo = { 
+    id: Date.now(), 
+    data: new Date().toLocaleDateString('pt-BR'), 
+    desc, 
+    valor, 
+    cat, 
+    divisao, 
+    drive: imageUrl 
+  };
+  
+  gastos.unshift(novo);
+  localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
+  renderizarGeral();
+
+  document.getElementById('gasto-desc').value = '';
+  document.getElementById('gasto-valor').value = '';
+  arquivoFotoParaEnviar = null;
+  document.getElementById('file-label-text').innerText = 'Tirar Foto / Arquivo';
+  alert('Gasto salvo com sucesso!');
+}
+
+window.removerGasto = function(id) {
+  gastos = gastos.filter(g => g.id !== id);
+  localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
+  renderizarGeral();
+}
+
+window.removerReport = function(id) {
+  reports = reports.filter(r => r.id !== id);
+  localStorage.setItem('space_bibi_reports', JSON.stringify(reports));
+  renderizarGeral();
 }
 
 window.exportarCSV = function() {
@@ -199,7 +162,31 @@ window.exportarCSV = function() {
   document.body.removeChild(link);
 }
 
+window.salvarEGerarReport = function() {
+  const dataStr = document.getElementById('rotina-data').value;
+  const escola = document.getElementById('rotina-escola').value;
+  const ref = document.getElementById('check-refeicao').checked ? '✅ OK' : '❌ Pendente';
+  const rem = document.getElementById('check-remedio').checked ? '✅ OK' : '❌ Pendente';
+  const lic = document.getElementById('check-licao').checked ? '✅ OK' : '❌ Pendente';
+  const ban = document.getElementById('check-banho').checked ? '✅ OK' : '❌ Pendente';
+  const obs = document.getElementById('rotina-obs').value.trim();
+
+  const texto = `🌸 *REPORT DIÁRIO - SPACE DA BIBI* 🌸\n📅 Data: ${dataStr} | Escola: ${escola}\n\n*Rotina:*\n• Refeições: ${ref}\n• Medicamentos: ${rem}\n• Tarefas: ${lic}\n• Higiene: ${ban}\n\n*Obs:* ${obs || 'Tudo ótimo por aqui!'}`;
+  
+  reports.unshift({ id: Date.now(), data: dataStr, escola, texto });
+  localStorage.setItem('space_bibi_reports', JSON.stringify(reports));
+  renderizarGeral();
+
+  document.getElementById('texto-report').innerText = texto;
+  document.getElementById('box-preview-report').classList.remove('hidden');
+  
+  const encodedText = encodeURIComponent(texto);
+  document.getElementById('whatsapp-link').href = `https://api.whatsapp.com/send?text=${encodedText}`;
+}
+
 window.copiarTextoReport = function() {
   navigator.clipboard.writeText(document.getElementById('texto-report').innerText);
   alert('Report copiado para o WhatsApp!');
 }
+
+renderizarGeral();
