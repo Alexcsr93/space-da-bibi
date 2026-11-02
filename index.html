@@ -3,378 +3,309 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Space da Bibi - Gestão & Rotina</title>
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#ec4899">
-  <!-- CSS Tailwind e FontAwesome via CDN -->
+  <title>Space da Bibi - Gestão & Convivência</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#db2777">
 </head>
-<body class="bg-slate-50 min-h-screen pb-20 text-slate-800 font-sans">
+<body class="bg-slate-100 text-slate-800 min-h-screen pb-24 font-sans">
 
-  <!-- Header do App -->
-  <header class="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4 shadow-md sticky top-0 z-40">
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-pink-600 to-purple-600 text-white p-4 shadow-md sticky top-0 z-50">
     <div class="max-w-md mx-auto flex justify-between items-center">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-lg">🚀</div>
-        <div>
-          <h1 class="font-bold text-lg leading-tight">Space da Bibi</h1>
-          <p class="text-xs text-pink-100">Gestão de Gastos e Rotina</p>
-        </div>
+      <div class="flex items-center gap-2">
+        <i data-lucide="sparkles" class="w-6 h-6"></i>
+        <h1 class="font-bold text-lg tracking-wide">Space da Bibi</h1>
       </div>
-      
-      <!-- Controle de Autenticação do Google -->
-      <div id="auth-container">
-        <button id="btn-login-google" onclick="loginComGoogle()" class="text-xs bg-white text-pink-600 font-bold px-3 py-1.5 rounded-lg shadow-sm hover:bg-pink-50 transition flex items-center gap-1.5">
-          <i class="fab fa-google text-red-500"></i> Entrar
-        </button>
-        <div id="user-info" class="hidden flex items-center gap-2">
-          <img id="user-photo" src="" class="w-7 h-7 rounded-full border-2 border-white/80 object-cover">
-          <button onclick="logoutGoogle()" class="text-[10px] bg-black/20 hover:bg-black/30 text-white px-2 py-1 rounded">Sair</button>
-        </div>
-      </div>
+      <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">v1.4</span>
     </div>
   </header>
 
-  <!-- Conteúdo Principal com Abas -->
+  <!-- Navigation Tabs -->
+  <nav class="max-w-md mx-auto px-4 mt-4">
+    <div class="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200 gap-1">
+      <button onclick="mudarAba('home')" id="btn-home" class="flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-pink-600 text-white shadow-sm">
+        <i data-lucide="home" class="w-4 h-4"></i> Início
+      </button>
+      <button onclick="mudarAba('financeiro')" id="btn-financeiro" class="flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50">
+        <i data-lucide="wallet" class="w-4 h-4"></i> Financeiro
+      </button>
+      <button onclick="mudarAba('rotina')" id="btn-rotina" class="flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50">
+        <i data-lucide="calendar-check" class="w-4 h-4"></i> Rotina
+      </button>
+    </div>
+  </nav>
+
+  <!-- Main Container -->
   <main class="max-w-md mx-auto p-4 space-y-4">
 
-    <!-- ABA 1: DASHBOARD / INÍCIO -->
-    <section id="aba-inicio" class="tab-content space-y-4">
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center space-x-4">
+    <!-- 1. ABA TELA INICIAL (HOME COM FOTO E NOME EDITÁVEIS) -->
+    <section id="aba-home" class="space-y-4">
+      
+      <!-- Card de Perfil da Criança -->
+      <div class="bg-gradient-to-br from-pink-500 to-purple-600 p-5 rounded-3xl text-white shadow-md flex items-center gap-4">
         <div class="relative">
-          <img id="avatar-img" src="https://cdn-icons-png.flaticon.com/512/3082/3082060.png" class="w-16 h-16 rounded-full object-cover border-2 border-pink-400">
+          <img id="perfil-foto-preview" src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" alt="Foto" class="w-16 h-16 rounded-full object-cover border-2 border-white bg-white shadow-inner">
+          <label class="absolute bottom-0 right-0 bg-white text-pink-600 p-1 rounded-full cursor-pointer shadow hover:bg-pink-50 transition">
+            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <input type="file" accept="image/*" class="hidden" onchange="tratarFotoPerfil(event)">
+          </label>
         </div>
-        <div>
-          <h2 class="text-xl font-bold text-slate-800">Olá, Família! 👋</h2>
-          <p class="text-xs text-slate-500 mt-0.5">Acompanhe a rotina e as despesas da Bianca em um só lugar.</p>
+        <div class="flex-1 space-y-1">
+          <p class="text-[10px] uppercase font-medium text-pink-100 tracking-wider">Bem-vindos ao espaço da</p>
+          <div class="flex items-center gap-2">
+            <input type="text" id="perfil-nome-input" value="Bianca" onblur="salvarPerfilNome(this.value)" class="bg-transparent font-black text-xl text-white border-b border-white/40 focus:outline-none focus:border-white w-full">
+          </div>
+          <p class="text-xs text-pink-100">Gestão & Convivência Familiar</p>
         </div>
       </div>
 
-      <!-- Resumo Financeiro -->
+      <!-- Resumo do Mês -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Gasto no Mês Atual</p>
+        <h2 id="home-total-mes" class="text-2xl font-black text-pink-600">R$ 0,00</h2>
+        <p id="home-qtd-gastos" class="text-xs text-slate-500">0 lançamentos registrados neste mês</p>
+      </div>
+
       <div class="grid grid-cols-2 gap-3">
-        <div class="bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-2xl p-4 shadow-sm">
-          <p class="text-xs text-pink-100">Total do Mês</p>
-          <p id="dash-total-mes" class="text-xl font-extrabold mt-1">R$ 0,00</p>
-          <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Gastos da Bibi</span>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+          <div class="p-3 bg-pink-50 text-pink-600 rounded-xl">
+            <i data-lucide="file-text" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Reports Salvos</p>
+            <p id="home-total-reports" class="text-lg font-black text-slate-800">0</p>
+          </div>
         </div>
-        <div class="bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-2xl p-4 shadow-sm">
-          <p class="text-xs text-purple-100">Reports Hoje</p>
-          <p id="dash-reports-hoje" class="text-xl font-extrabold mt-1">0</p>
-          <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Rotina registrada</span>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
+          <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
+            <i data-lucide="wallet" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-slate-400 uppercase">Total Geral</p>
+            <p id="home-total-geral" class="text-lg font-black text-slate-800">R$ 0,00</p>
+          </div>
         </div>
       </div>
 
-      <!-- Divisão de Gastos -->
-      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
-        <h3 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
-          <i class="fas fa-balance-scale text-pink-500"></i> Divisão de Gastos (Mês Atual)
-        </h3>
-        <div class="space-y-2 text-xs">
-          <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl">
-            <span class="font-medium text-slate-600">Total Papai:</span>
-            <span id="dash-total-papai" class="font-bold text-slate-800">R$ 0,00</span>
-          </div>
-          <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl">
-            <span class="font-medium text-slate-600">Total Mamãe:</span>
-            <span id="dash-total-mamae" class="font-bold text-slate-800">R$ 0,00</span>
-          </div>
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <h3 class="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">Atividades Recentes</h3>
+        <div id="home-recentes" class="space-y-2">
+          <p class="text-xs text-center text-slate-400 py-3">Nenhuma atividade recente.</p>
         </div>
       </div>
     </section>
 
-    <!-- ABA 2: FINANCEIRO -->
-    <section id="aba-financeiro" class="tab-content hidden space-y-4">
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-        <h3 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
-          <i class="fas fa-plus-circle text-pink-500"></i> Novo Gasto
-        </h3>
-        <form id="form-gasto" onsubmit="adicionarGasto(event)" class="space-y-3">
+    <!-- 2. ABA FINANCEIRO -->
+    <section id="aba-financeiro" class="space-y-4 hidden">
+      <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
+        <span class="text-xs font-bold text-slate-600">Filtrar por Mês:</span>
+        <select id="filtro-mes" onchange="mudarFiltroMes(this.value)" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500">
+        </select>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <i data-lucide="plus-circle" class="w-5 h-5 text-pink-600"></i>
+          <h2 class="font-bold text-sm text-slate-800">Novo Lançamento</h2>
+        </div>
+        
+        <div class="space-y-2 text-xs">
           <div>
-            <label class="block text-xs font-semibold text-slate-600 mb-1">Descrição</label>
-            <input type="text" id="gasto-desc" required placeholder="Ex: Fraldas, Mensalidade..." class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+            <label class="font-semibold text-slate-600">Descrição</label>
+            <input type="text" id="gasto-desc" placeholder="Ex: Farmácia, Roupas, Mensalidade" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
           </div>
-          <div class="grid grid-cols-2 gap-3">
+          
+          <div class="grid grid-cols-2 gap-2">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Valor (R$)</label>
-              <input type="number" step="0.01" id="gasto-valor" required placeholder="0,00" class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+              <label class="font-semibold text-slate-600">Valor (R$)</label>
+              <input type="number" step="0.01" id="gasto-valor" placeholder="0,00" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Categoria</label>
-              <select id="gasto-cat" class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
-                <option value="Escola">Escola</option>
-                <option value="Saúde">Saúde</option>
+              <label class="font-semibold text-slate-600">Data do Gasto</label>
+              <input type="date" id="gasto-data" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <label class="font-semibold text-slate-600">Categoria</label>
+              <select id="gasto-cat" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <option value="Escola / Estudos">Escola / Estudos</option>
+                <option value="Saúde / Farmácia">Saúde / Farmácia</option>
                 <option value="Alimentação">Alimentação</option>
-                <option value="Lazer">Lazer</option>
-                <option value="Vestuário">Vestuário</option>
+                <option value="Lazer / Passeios">Lazer / Passeios</option>
                 <option value="Outros">Outros</option>
               </select>
             </div>
-          </div>
-          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Data</label>
-              <input type="date" id="gasto-data" required class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
-            </div>
-            <div>
-              <label class="block text-xs font-semibold text-slate-600 mb-1">Divisão</label>
-              <select id="gasto-divisao" class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
-                <option value="50/50">Divisão 50% / 50%</option>
-                <option value="100% Papai">100% Papai</option>
-                <option value="100% Mamãe">100% Mamãe</option>
+              <label class="font-semibold text-slate-600">Divisão</label>
+              <select id="gasto-divisao" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+                <option value="Dividido 50/50">Dividido 50/50</option>
+                <option value="Pago por mim">Pago por mim</option>
+                <option value="Pago pela Mãe">Pago pela Mãe</option>
               </select>
             </div>
           </div>
-          <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm py-3 rounded-xl shadow-sm transition">
-            Lançar Despesa
+
+          <!-- BOTÃO DE ANEXAR FOTO DO COMPROVANTE -->
+          <div>
+            <label class="font-semibold text-slate-600">Comprovante (Foto)</label>
+            <label class="flex items-center justify-center gap-1.5 w-full mt-1 p-2.5 bg-slate-50 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-100 transition text-slate-600">
+              <i data-lucide="camera" class="w-4 h-4 text-pink-600"></i>
+              <span id="file-label-text" class="truncate">Tirar Foto do Comprovante</span>
+              <input type="file" accept="image/*" class="hidden" onchange="tratarFotoDrive(event)">
+            </label>
+            <input type="hidden" id="gasto-drive">
+          </div>
+
+          <button onclick="adicionarGasto()" class="w-full mt-2 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+            <i data-lucide="check" class="w-4 h-4"></i> Salvar Despesa
           </button>
-        </form>
+        </div>
       </div>
 
-      <!-- Lista de Gastos -->
-      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
-        <div class="flex justify-between items-center">
-          <h3 class="text-sm font-bold text-slate-800">Histórico de Gastos</h3>
-          <input type="month" id="filtro-mes" onchange="renderizarGastos()" class="text-xs border border-slate-200 rounded-xl p-1.5 focus:outline-none">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+          <h3 id="titulo-historico-mes" class="font-bold text-sm text-slate-800">Gastos do Mês</h3>
+          <button onclick="exportarCSV()" class="text-xs text-pink-600 hover:underline flex items-center gap-1 font-semibold">
+            <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar CSV
+          </button>
         </div>
-        <div id="lista-gastos" class="space-y-2"></div>
+        <div id="lista-gastos" class="space-y-2 max-h-72 overflow-y-auto">
+          <p class="text-xs text-center text-slate-400 py-3">Nenhum gasto registrado neste mês.</p>
+        </div>
       </div>
     </section>
 
-    <!-- ABA 3: ROTINA & REPORTS -->
-    <section id="aba-rotina" class="tab-content hidden space-y-4">
-      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
-        <h3 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
-          <i class="fas fa-clipboard-check text-purple-500"></i> Check-in Diário
-        </h3>
-        <div class="space-y-3 text-xs">
-          <div>
-            <label class="block font-semibold text-slate-600 mb-1">Data</label>
-            <input type="date" id="rotina-data" class="w-full text-xs border border-slate-200 rounded-xl p-2">
-          </div>
+    <!-- 3. ABA ROTINA & REPORT -->
+    <section id="aba-rotina" class="space-y-4 hidden">
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
+          <i data-lucide="file-text" class="w-5 h-5 text-purple-700"></i>
+          <h2 class="font-bold text-sm text-slate-800">Gerador de Report Diário</h2>
+        </div>
+
+        <div class="space-y-2 text-xs">
           <div class="grid grid-cols-2 gap-2">
-            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
-              <input type="checkbox" id="check-refeicao" class="accent-pink-500 rounded">
-              <span class="text-slate-700">Alimentação OK</span>
-            </label>
-            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
-              <input type="checkbox" id="check-remedio" class="accent-pink-500 rounded">
-              <span class="text-slate-700">Medicamentos OK</span>
-            </label>
-            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
-              <input type="checkbox" id="check-licao" class="accent-pink-500 rounded">
-              <span class="text-slate-700">Tarefas OK</span>
-            </label>
-            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
-              <input type="checkbox" id="check-banho" class="accent-pink-500 rounded">
-              <span class="text-slate-700">Higiene / Banho</span>
-            </label>
+            <div>
+              <label class="font-semibold text-slate-600">Data</label>
+              <input type="date" id="rotina-data" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
+            <div>
+              <label class="font-semibold text-slate-600">Escola / Atividade</label>
+              <input type="text" id="rotina-escola" placeholder="Ex: Colégio X / Em casa" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
+            </div>
           </div>
+
+          <div class="space-y-1.5 pt-1">
+            <label class="font-semibold text-slate-600">Checklist do Dia</label>
+            <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="check-refeicao" class="w-4 h-4 text-purple-600 rounded"> Refeições OK
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="check-remedio" class="w-4 h-4 text-purple-600 rounded"> Remédios / Vit.
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="check-licao" class="w-4 h-4 text-purple-600 rounded"> Lição / Tarefas
+              </label>
+              <label class="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" id="check-banho" class="w-4 h-4 text-purple-600 rounded"> Banho / Higiene
+              </label>
+            </div>
+          </div>
+
           <div>
-            <label class="block font-semibold text-slate-600 mb-1">Observações do Dia</label>
-            <textarea id="rotina-obs" rows="3" placeholder="Ex: Dia ótimo, tomou o remédio às 14h..." class="w-full border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"></textarea>
+            <label class="font-semibold text-slate-600">Observações / Destaques do Dia</label>
+            <textarea id="rotina-obs" rows="2" placeholder="Como foi o dia, humor, novidades..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
           </div>
-          <button onclick="salvarEGerarReport()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs py-3 rounded-xl transition">
-            Gerar Report WhatsApp
+
+          <button onclick="salvarEGerarReport()" class="w-full mt-2 py-3 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
+            <i data-lucide="share-2" class="w-4 h-4"></i> Gerar & Salvar Report
           </button>
         </div>
       </div>
 
-      <!-- Preview Report -->
-      <div id="box-preview-report" class="hidden bg-emerald-50 rounded-2xl p-4 border border-emerald-100 space-y-3">
-        <h4 class="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
-          <i class="fab fa-whatsapp text-emerald-600 text-sm"></i> Report Pronto para Envio
-        </h4>
-        <div id="texto-report" class="text-xs bg-white p-3 rounded-xl border border-emerald-200 whitespace-pre-line text-slate-700"></div>
-        <a id="whatsapp-link" target="_blank" class="block w-full bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs py-2.5 text-center rounded-xl transition">
-          <i class="fab fa-whatsapp"></i> Abrir no WhatsApp
-        </a>
+      <div id="box-preview-report" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 hidden">
+        <h3 class="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">Preview para WhatsApp</h3>
+        <div id="texto-report" class="p-3 bg-slate-50 rounded-xl text-xs whitespace-pre-line font-mono text-slate-700 border border-slate-200"></div>
+        <div class="flex gap-2">
+          <button onclick="copiarTextoReport()" class="flex-1 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 hover:bg-slate-900 transition">
+            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Texto
+          </button>
+          <a id="whatsapp-link" href="#" target="_blank" class="flex-1 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 hover:bg-emerald-700 transition">
+            <i data-lucide="send" class="w-3.5 h-3.5"></i> Enviar WhatsApp
+          </a>
+        </div>
+      </div>
+
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+        <h3 class="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">Reports Salvos</h3>
+        <div id="lista-reports" class="space-y-2 max-h-72 overflow-y-auto">
+          <p class="text-xs text-center text-slate-400 py-3">Nenhum report salvo ainda.</p>
+        </div>
       </div>
     </section>
 
   </main>
 
-  <!-- Navegação Inferior -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 z-50">
-    <div class="max-w-md mx-auto grid grid-cols-3 gap-1">
-      <button onclick="trocarAba('inicio')" id="btn-inicio" class="flex flex-col items-center justify-center py-1.5 text-pink-500 font-bold text-[10px]">
-        <i class="fas fa-home text-base mb-0.5"></i> Início
-      </button>
-      <button onclick="trocarAba('financeiro')" id="btn-financeiro" class="flex flex-col items-center justify-center py-1.5 text-slate-400 font-medium text-[10px]">
-        <i class="fas fa-wallet text-base mb-0.5"></i> Financeiro
-      </button>
-      <button onclick="trocarAba('rotina')" id="btn-rotina" class="flex flex-col items-center justify-center py-1.5 text-slate-400 font-medium text-[10px]">
-        <i class="fas fa-calendar-check text-base mb-0.5"></i> Rotina
+  <!-- MODAL DE ZOOM DA FOTO DO COMPROVANTE -->
+  <div id="modal-foto" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-4 space-y-3 shadow-2xl relative">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+        <h3 class="font-bold text-sm text-slate-800">Comprovante Anexado</h3>
+        <button onclick="fecharModalFoto()" class="text-slate-400 hover:text-red-500 p-1">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+      <div class="flex justify-center bg-slate-100 rounded-2xl overflow-hidden p-2 max-h-96">
+        <img id="img-comprovante-zoom" src="" alt="Comprovante" class="object-contain max-h-80 rounded-xl">
+      </div>
+      <button onclick="fecharModalFoto()" class="w-full py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs hover:bg-slate-900 transition">
+        Fechar
       </button>
     </div>
-  </nav>
+  </div>
 
-  <!-- Firebase SDK e Lógica da Aplicação -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyAPy71ptJA67PBVOcBdlBs5a9Mwcl8dVkA",
-      authDomain: "spacedabibi.firebaseapp.com",
-      projectId: "spacedabibi",
-      storageBucket: "spacedabibi.firebasestorage.app",
-      messagingSenderId: "548941959127",
-      appId: "1:548941959127:web:868af2e93fcf1e43fac592"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
-
-    window.loginComGoogle = function() {
-      signInWithPopup(auth, provider)
-        .then((result) => {
-          atualizarUIUsuario(result.user);
-        })
-        .catch((error) => {
-          console.error("Erro no login:", error);
-          alert("Erro ao logar com o Google. Certifique-se de que alexcsr93.github.io está autorizado no Firebase.");
-        });
-    };
-
-    window.logoutGoogle = function() {
-      signOut(auth).then(() => {
-        atualizarUIUsuario(null);
-      });
-    };
-
-    onAuthStateChanged(auth, (user) => {
-      atualizarUIUsuario(user);
-    });
-
-    function atualizarUIUsuario(user) {
-      const btnLogin = document.getElementById('btn-login-google');
-      const userInfo = document.getElementById('user-info');
-      const userPhoto = document.getElementById('user-photo');
-
-      if (user) {
-        if (btnLogin) btnLogin.classList.add('hidden');
-        if (userInfo) userInfo.classList.remove('hidden');
-        if (userPhoto) userPhoto.src = user.photoURL || 'https://cdn-icons-png.flaticon.com/512/3082/3082060.png';
-      } else {
-        if (btnLogin) btnLogin.classList.remove('hidden');
-        if (userInfo) userInfo.classList.add('hidden');
-      }
-    }
-  </script>
-
+  <script src="config.js"></script>
   <script>
-    // Gerenciamento Local do App
-    let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
-    let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const hoje = new Date().toISOString().split('T')[0];
-      if (document.getElementById('gasto-data')) document.getElementById('gasto-data').value = hoje;
-      if (document.getElementById('rotina-data')) document.getElementById('rotina-data').value = hoje;
-      if (document.getElementById('filtro-mes')) document.getElementById('filtro-mes').value = hoje.substring(0, 7);
-
-      renderizarGeral();
-    });
-
-    function trocarAba(aba) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
-      document.getElementById(`aba-${aba}`).classList.remove('hidden');
-
-      ['inicio', 'financeiro', 'rotina'].forEach(b => {
-        const btn = document.getElementById(`btn-${b}`);
-        btn.className = b === aba 
-          ? 'flex flex-col items-center justify-center py-1.5 text-pink-500 font-bold text-[10px]' 
-          : 'flex flex-col items-center justify-center py-1.5 text-slate-400 font-medium text-[10px]';
-      });
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js');
     }
-
-    function adicionarGasto(e) {
-      e.preventDefault();
-      const desc = document.getElementById('gasto-desc').value.trim();
-      const valor = parseFloat(document.getElementById('gasto-valor').value);
-      const cat = document.getElementById('gasto-cat').value;
-      const data = document.getElementById('gasto-data').value;
-      const divisao = document.getElementById('gasto-divisao').value;
-
-      if (!desc || isNaN(valor)) return;
-
-      gastos.unshift({ id: Date.now(), desc, valor, cat, data, divisao });
-      localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
-      document.getElementById('form-gasto').reset();
-      document.getElementById('gasto-data').value = new Date().toISOString().split('T')[0];
-      renderizarGeral();
-    }
-
-    function renderizarGeral() {
-      renderizarGastos();
-      atualizarDashboard();
-    }
-
-    function renderizarGastos() {
-      const lista = document.getElementById('lista-gastos');
-      const mesFiltro = document.getElementById('filtro-mes').value;
-      const filtrados = mesFiltro ? gastos.filter(g => g.data.startsWith(mesFiltro)) : gastos;
-
-      if (!filtrados.length) {
-        lista.innerHTML = '<p class="text-xs text-slate-400 py-3 text-center">Nenhum gasto neste mês.</p>';
-        return;
-      }
-
-      lista.innerHTML = filtrados.map(g => `
-        <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-          <div>
-            <p class="font-bold text-slate-800">${g.desc}</p>
-            <p class="text-[10px] text-slate-500">${g.data} • <span class="text-pink-600 font-medium">${g.cat}</span> • ${g.divisao}</p>
-          </div>
-          <div class="text-right">
-            <p class="font-extrabold text-slate-800">R$ ${g.valor.toFixed(2)}</p>
-            <button onclick="removerGasto(${g.id})" class="text-[10px] text-rose-400">&times; Apagar</button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function removerGasto(id) {
-      if (confirm('Excluir este gasto?')) {
-        gastos = gastos.filter(g => g.id !== id);
-        localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
-        renderizarGeral();
-      }
-    }
-
-    function atualizarDashboard() {
-      const hoje = new Date().toISOString().split('T')[0];
-      const mesAtual = hoje.substring(0, 7);
-      const gastosMes = gastos.filter(g => g.data.startsWith(mesAtual));
+    
+    function mudarAba(aba) {
+      const home = document.getElementById('aba-home');
+      const fin = document.getElementById('aba-financeiro');
+      const rot = document.getElementById('aba-rotina');
       
-      let papai = 0, mamae = 0;
-      gastosMes.forEach(g => {
-        if (g.divisao === '50/50') { papai += g.valor / 2; mamae += g.valor / 2; }
-        else if (g.divisao === '100% Papai') { papai += g.valor; }
-        else if (g.divisao === '100% Mamãe') { mamae += g.valor; }
-      });
+      const bHome = document.getElementById('btn-home');
+      const bFin = document.getElementById('btn-financeiro');
+      const bRot = document.getElementById('btn-rotina');
 
-      const totalMes = gastosMes.reduce((acc, g) => acc + g.valor, 0);
-      document.getElementById('dash-total-mes').innerText = `R$ ${totalMes.toFixed(2)}`;
-      document.getElementById('dash-total-papai').innerText = `R$ ${papai.toFixed(2)}`;
-      document.getElementById('dash-total-mamae').innerText = `R$ ${mamae.toFixed(2)}`;
+      home.classList.add('hidden');
+      fin.classList.add('hidden');
+      rot.classList.add('hidden');
+
+      bHome.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50";
+      bFin.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50";
+      bRot.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50";
+
+      if (aba === 'home') {
+        home.classList.remove('hidden');
+        bHome.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-pink-600 text-white shadow-sm";
+      } else if (aba === 'financeiro') {
+        fin.classList.remove('hidden');
+        bFin.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-pink-600 text-white shadow-sm";
+      } else {
+        rot.classList.remove('hidden');
+        bRot.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-purple-700 text-white shadow-sm";
+      }
     }
 
-    function salvarEGerarReport() {
-      const dataStr = document.getElementById('rotina-data').value;
-      const ref = document.getElementById('check-refeicao').checked ? '✅ OK' : '❌ Pendente';
-      const rem = document.getElementById('check-remedio').checked ? '✅ OK' : '❌ Pendente';
-      const lic = document.getElementById('check-licao').checked ? '✅ OK' : '❌ Pendente';
-      const ban = document.getElementById('check-banho').checked ? '✅ OK' : '❌ Pendente';
-      const obs = document.getElementById('rotina-obs').value.trim();
-
-      const texto = `🌸 *REPORT DIÁRIO - SPACE DA BIBI* 🌸\n📅 Data: ${dataStr}\n\n*Rotina:*\n• Refeições: ${ref}\n• Medicamentos: ${rem}\n• Tarefas: ${lic}\n• Higiene: ${ban}\n\n*Obs:* ${obs || 'Tudo ótimo por aqui!'}`;
-
-      document.getElementById('texto-report').innerText = texto;
-      document.getElementById('box-preview-report').classList.remove('hidden');
-      document.getElementById('whatsapp-link').href = `https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`;
+    function fecharModalFoto() {
+      document.getElementById('modal-foto').classList.add('hidden');
     }
   </script>
 </body>
