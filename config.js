@@ -1,4 +1,4 @@
-// Space da Bibi - Configuração Segura e Estável
+// Space da Bibi - Configuração Estável e Definitiva
 let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
 let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
 
@@ -121,10 +121,8 @@ window.removerReport = function(id) {
 
 window.exportarCSV = function() {
   if (gastos.length === 0) return alert('Sem dados para exportar.');
-  let csv = 'Data;Descrição;Categoria;Valor;Divisão
-';
-  gastos.forEach(g => { csv += `${g.data};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao}
-`; });
+  let csv = "Data;Descrição;Categoria;Valor;Divisão\n";
+  gastos.forEach(g => { csv += `${g.data};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao}\n`; });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
