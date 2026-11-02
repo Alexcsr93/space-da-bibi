@@ -1,4 +1,4 @@
-// Space da Bibi - Configuração Definitiva com Visualização de Foto em Modal
+// Space da Bibi - Configuração Final Blindada
 let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
 let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
 
@@ -20,7 +20,7 @@ window.tratarFotoDrive = function(event) {
     const hiddenInput = document.getElementById('gasto-drive');
     if (hiddenInput) hiddenInput.value = e.target.result;
     const labelText = document.getElementById('file-label-text');
-    if (labelText) labelText.innerText = "Foto anexada com sucesso!";
+    if (labelText) labelText.innerText = "Foto anexada!";
   };
   reader.readAsDataURL(file);
 }
@@ -36,93 +36,97 @@ window.abrirComprovanteModal = function(base64Data) {
 
 window.mudarFiltroMes = function(novoMes) {
   mesSelecionado = novoMes;
-  renderizarGeral();
+  window.renderizarGeral();
 }
 
 window.renderizarGeral = function() {
-  atualizarSeletorMeses();
+  try {
+    atualizarSeletorMeses();
 
-  const gastosFiltrados = gastos.filter(g => {
-    if (!g.dataIso) return false;
-    return g.dataIso.startsWith(mesSelecionado);
-  });
+    const gastosFiltrados = gastos.filter(g => {
+      if (!g.dataIso) return false;
+      return g.dataIso.startsWith(mesSelecionado);
+    });
 
-  const totalGeral = gastos.reduce((acc, g) => acc + (g.valor || 0), 0);
-  const totalMes = gastosFiltrados.reduce((acc, g) => acc + (g.valor || 0), 0);
+    const totalGeral = gastos.reduce((acc, g) => acc + (g.valor || 0), 0);
+    const totalMes = gastosFiltrados.reduce((acc, g) => acc + (g.valor || 0), 0);
 
-  if(document.getElementById('home-total-geral')) document.getElementById('home-total-geral').innerText = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
-  if(document.getElementById('home-total-mes')) document.getElementById('home-total-mes').innerText = `R$ ${totalMes.toFixed(2).replace('.', ',')}`;
-  if(document.getElementById('home-qtd-gastos')) document.getElementById('home-qtd-gastos').innerText = `${gastosFiltrados.length} lançamentos neste mês`;
-  if(document.getElementById('home-total-reports')) document.getElementById('home-total-reports').innerText = reports.length;
+    if(document.getElementById('home-total-geral')) document.getElementById('home-total-geral').innerText = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
+    if(document.getElementById('home-total-mes')) document.getElementById('home-total-mes').innerText = `R$ ${totalMes.toFixed(2).replace('.', ',')}`;
+    if(document.getElementById('home-qtd-gastos')) document.getElementById('home-qtd-gastos').innerText = `${gastosFiltrados.length} lançamentos neste mês`;
+    if(document.getElementById('home-total-reports')) document.getElementById('home-total-reports').innerText = reports.length;
 
-  const homeRec = document.getElementById('home-recentes');
-  if (homeRec) {
-    if (gastos.length === 0) {
-      homeRec.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhuma atividade recente.</p>';
-    } else {
-      let htmlHome = '';
-      gastos.slice(0, 3).forEach(g => {
-        htmlHome += `
-          <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-            <div>
-              <p class="font-bold text-slate-800">${g.desc}</p>
-              <p class="text-[10px] text-slate-500">${g.dataBr} • <span class="text-pink-600 font-semibold">${g.cat}</span></p>
+    const homeRec = document.getElementById('home-recentes');
+    if (homeRec) {
+      if (gastos.length === 0) {
+        homeRec.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhuma atividade recente.</p>';
+      } else {
+        let htmlHome = '';
+        gastos.slice(0, 3).forEach(g => {
+          htmlHome += `
+            <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+              <div>
+                <p class="font-bold text-slate-800">${g.desc}</p>
+                <p class="text-[10px] text-slate-500">${g.dataBr || ''} • <span class="text-pink-600 font-semibold">${g.cat}</span></p>
+              </div>
+              <span class="font-black text-slate-900">R$ ${(g.valor || 0).toFixed(2).replace('.', ',')}</span>
             </div>
-            <span class="font-black text-slate-900">R$ ${g.valor.toFixed(2).replace('.', ',')}</span>
-          </div>
-        `;
-      });
-      homeRec.innerHTML = htmlHome;
+          `;
+        });
+        homeRec.innerHTML = htmlHome;
+      }
     }
-  }
 
-  const listaG = document.getElementById('lista-gastos');
-  if (listaG) {
-    if (gastosFiltrados.length === 0) {
-      listaG.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhum gasto registrado neste mês.</p>';
-    } else {
-      let htmlGastos = '';
-      gastosFiltrados.forEach((g) => {
-        htmlGastos += `
-          <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-            <div>
-              <p class="font-bold text-slate-800">${g.desc}</p>
-              <p class="text-[10px] text-slate-500">${g.dataBr} • <span class="text-pink-600 font-semibold">${g.cat}</span> (${g.divisao})</p>
-              ${g.drive ? `<button onclick="abrirComprovanteModal('${g.drive}')" class="text-[10px] text-pink-600 hover:underline flex items-center gap-1 mt-0.5 text-left font-semibold"><i data-lucide="image" class="w-3 h-3"></i> Ver Comprovante</button>` : ''}
+    const listaG = document.getElementById('lista-gastos');
+    if (listaG) {
+      if (gastosFiltrados.length === 0) {
+        listaG.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhum gasto registrado neste mês.</p>';
+      } else {
+        let htmlGastos = '';
+        gastosFiltrados.forEach((g) => {
+          htmlGastos += `
+            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
+              <div>
+                <p class="font-bold text-slate-800">${g.desc}</p>
+                <p class="text-[10px] text-slate-500">${g.dataBr || ''} • <span class="text-pink-600 font-semibold">${g.cat}</span> (${g.divisao})</p>
+                ${g.drive ? `<button onclick="abrirComprovanteModal('${g.drive}')" class="text-[10px] text-pink-600 hover:underline flex items-center gap-1 mt-0.5 text-left font-semibold"><i data-lucide="image" class="w-3 h-3"></i> Ver Comprovante</button>` : ''}
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="font-black text-slate-900">R$ ${(g.valor || 0).toFixed(2).replace('.', ',')}</span>
+                <button onclick="removerGasto(${g.id})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="font-black text-slate-900">R$ ${g.valor.toFixed(2).replace('.', ',')}</span>
-              <button onclick="removerGasto(${g.id})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-            </div>
-          </div>
-        `;
-      });
-      listaG.innerHTML = htmlGastos;
+          `;
+        });
+        listaG.innerHTML = htmlGastos;
+      }
     }
-  }
 
-  const listaRep = document.getElementById('lista-reports');
-  if (listaRep) {
-    if (reports.length === 0) {
-      listaRep.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhum report salvo ainda.</p>';
-    } else {
-      let htmlReports = '';
-      reports.forEach(r => {
-        htmlReports += `
-          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1">
-            <div class="flex justify-between items-center font-bold text-purple-900">
-              <span>📅 ${r.data} (Escola: ${r.escola})</span>
-              <button onclick="removerReport(${r.id})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+    const listaRep = document.getElementById('lista-reports');
+    if (listaRep) {
+      if (reports.length === 0) {
+        listaRep.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhum report salvo ainda.</p>';
+      } else {
+        let htmlReports = '';
+        reports.forEach(r => {
+          htmlReports += `
+            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1">
+              <div class="flex justify-between items-center font-bold text-purple-900">
+                <span>📅 ${r.data} (Escola: ${r.escola})</span>
+                <button onclick="removerReport(${r.id})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+              </div>
+              <p class="text-slate-600 text-[11px] whitespace-pre-line">${r.texto}</p>
             </div>
-            <p class="text-slate-600 text-[11px] whitespace-pre-line">${r.texto}</p>
-          </div>
-        `;
-      });
-      listaRep.innerHTML = htmlReports;
+          `;
+        });
+        listaRep.innerHTML = htmlReports;
+      }
     }
-  }
 
-  if (typeof lucide !== 'undefined') lucide.createIcons();
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+  } catch (err) {
+    console.error("Erro ao renderizar:", err);
+  }
 }
 
 function atualizarSeletorMeses() {
@@ -165,7 +169,10 @@ window.adicionarGasto = function() {
   const divisaoElem = document.getElementById('gasto-divisao');
   const driveElem = document.getElementById('gasto-drive');
 
-  if (!descElem || !valorElem || !dataElem) return;
+  if (!descElem || !valorElem || !dataElem) {
+    alert('Erro interno: campos do formulário não encontrados.');
+    return;
+  }
 
   const desc = descElem.value.trim();
   const valor = parseFloat(valorElem.value);
@@ -187,7 +194,7 @@ window.adicionarGasto = function() {
   
   localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
   mesSelecionado = dataIso.substring(0, 7);
-  renderizarGeral();
+  window.renderizarGeral();
 
   descElem.value = '';
   valorElem.value = '';
@@ -201,13 +208,13 @@ window.adicionarGasto = function() {
 window.removerGasto = function(id) {
   gastos = gastos.filter(g => g.id !== id);
   localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
-  renderizarGeral();
+  window.renderizarGeral();
 }
 
 window.removerReport = function(id) {
   reports = reports.filter(r => r.id !== id);
   localStorage.setItem('space_bibi_reports', JSON.stringify(reports));
-  renderizarGeral();
+  window.renderizarGeral();
 }
 
 window.exportarCSV = function() {
@@ -241,7 +248,7 @@ window.salvarEGerarReport = function() {
   
   reports.unshift({ id: Date.now(), data: dataStr, escola, texto });
   localStorage.setItem('space_bibi_reports', JSON.stringify(reports));
-  renderizarGeral();
+  window.renderizarGeral();
 
   document.getElementById('texto-report').innerText = texto;
   document.getElementById('box-preview-report').classList.remove('hidden');
@@ -258,11 +265,11 @@ window.copiarTextoReport = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
   const hoje = new Date().toISOString().split('T')[0];
-  if (document.getElementById('rotina-data')) {
+  if (document.getElementById('rotina-data') && !document.getElementById('rotina-data').value) {
     document.getElementById('rotina-data').value = hoje;
   }
-  if (document.getElementById('gasto-data')) {
+  if (document.getElementById('gasto-data') && !document.getElementById('gasto-data').value) {
     document.getElementById('gasto-data').value = hoje;
   }
-  renderizarGeral();
+  window.renderizarGeral();
 });
