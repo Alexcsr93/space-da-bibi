@@ -18,7 +18,7 @@
         <i data-lucide="sparkles" class="w-6 h-6"></i>
         <h1 class="font-bold text-lg tracking-wide">Space da Bibi</h1>
       </div>
-      <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">v1.3</span>
+      <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">v1.4</span>
     </div>
   </header>
 
@@ -40,12 +40,32 @@
   <!-- Main Container -->
   <main class="max-w-md mx-auto p-4 space-y-4">
 
-    <!-- ABA TELA INICIAL (HOME) -->
+    <!-- 1. ABA TELA INICIAL (HOME COM FOTO E NOME EDITÁVEIS) -->
     <section id="aba-home" class="space-y-4">
-      <div class="bg-gradient-to-br from-pink-500 to-purple-600 p-5 rounded-3xl text-white shadow-md space-y-2">
-        <p class="text-xs font-medium text-pink-100">Resumo Geral do Mês Atual</p>
-        <h2 id="home-total-mes" class="text-3xl font-black">R$ 0,00</h2>
-        <p id="home-qtd-gastos" class="text-xs text-pink-100">0 lançamentos registrados neste mês</p>
+      
+      <!-- Card de Perfil da Criança -->
+      <div class="bg-gradient-to-br from-pink-500 to-purple-600 p-5 rounded-3xl text-white shadow-md flex items-center gap-4">
+        <div class="relative">
+          <img id="perfil-foto-preview" src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" alt="Foto" class="w-16 h-16 rounded-full object-cover border-2 border-white bg-white shadow-inner">
+          <label class="absolute bottom-0 right-0 bg-white text-pink-600 p-1 rounded-full cursor-pointer shadow hover:bg-pink-50 transition">
+            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <input type="file" accept="image/*" class="hidden" onchange="tratarFotoPerfil(event)">
+          </label>
+        </div>
+        <div class="flex-1 space-y-1">
+          <p class="text-[10px] uppercase font-medium text-pink-100 tracking-wider">Bem-vindos ao espaço da</p>
+          <div class="flex items-center gap-2">
+            <input type="text" id="perfil-nome-input" value="Bianca" onblur="salvarPerfilNome(this.value)" class="bg-transparent font-black text-xl text-white border-b border-white/40 focus:outline-none focus:border-white w-full">
+          </div>
+          <p class="text-xs text-pink-100">Gestão & Convivência Familiar</p>
+        </div>
+      </div>
+
+      <!-- Resumo do Mês -->
+      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
+        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Gasto no Mês Atual</p>
+        <h2 id="home-total-mes" class="text-2xl font-black text-pink-600">R$ 0,00</h2>
+        <p id="home-qtd-gastos" class="text-xs text-slate-500">0 lançamentos registrados neste mês</p>
       </div>
 
       <div class="grid grid-cols-2 gap-3">
@@ -77,7 +97,7 @@
       </div>
     </section>
 
-    <!-- ABA FINANCEIRO -->
+    <!-- 2. ABA FINANCEIRO -->
     <section id="aba-financeiro" class="space-y-4 hidden">
       <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
         <span class="text-xs font-bold text-slate-600">Filtrar por Mês:</span>
@@ -158,7 +178,7 @@
       </div>
     </section>
 
-    <!-- ABA ROTINA & REPORT -->
+    <!-- 3. ABA ROTINA & REPORT -->
     <section id="aba-rotina" class="space-y-4 hidden">
       <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
         <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
@@ -230,7 +250,7 @@
 
   </main>
 
-  <!-- MODAL PARA EXIBIR A FOTO DO COMPROVANTE SEM ABRIR ABA EM BRANCO -->
+  <!-- MODAL DE ZOOM DA FOTO DO COMPROVANTE -->
   <div id="modal-foto" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
     <div class="bg-white rounded-3xl max-w-sm w-full p-4 space-y-3 shadow-2xl relative">
       <div class="flex justify-between items-center border-b border-slate-100 pb-2">

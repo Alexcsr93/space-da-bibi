@@ -1,6 +1,8 @@
-// Space da Bibi - Configuração Final Blindada
+// Space da Bibi - Configuração com Perfil e Foto Editáveis
 let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
 let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
+let perfilNome = localStorage.getItem('space_bibi_perfil_nome') || 'Bianca';
+let perfilFoto = localStorage.getItem('space_bibi_perfil_foto') || '';
 
 function mesAtualFormatado() {
   const agora = new Date();
@@ -10,6 +12,28 @@ function mesAtualFormatado() {
 }
 
 let mesSelecionado = mesAtualFormatado();
+
+// Atualizar Foto do Perfil
+window.tratarFotoPerfil = function(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    perfilFoto = e.target.result;
+    localStorage.setItem('space_bibi_perfil_foto', perfilFoto);
+    const imgPreview = document.getElementById('perfil-foto-preview');
+    if (imgPreview) imgPreview.src = perfilFoto;
+  };
+  reader.readAsDataURL(file);
+}
+
+window.salvarPerfilNome = function(novoNome) {
+  if (novoNome.trim()) {
+    perfilNome = novoNome.trim();
+    localStorage.setItem('space_bibi_perfil_nome', perfilNome);
+  }
+}
 
 window.tratarFotoDrive = function(event) {
   const file = event.target.files[0];
@@ -41,6 +65,16 @@ window.mudarFiltroMes = function(novoMes) {
 
 window.renderizarGeral = function() {
   try {
+    // Carregar dados de perfil na tela
+    const inputNome = document.getElementById('perfil-nome-input');
+    if (inputNome && document.activeElement !== inputNome) {
+      inputNome.value = perfilNome;
+    }
+    const imgPreview = document.getElementById('perfil-foto-preview');
+    if (imgPreview && perfilFoto) {
+      imgPreview.src = perfilFoto;
+    }
+
     atualizarSeletorMeses();
 
     const gastosFiltrados = gastos.filter(g => {
@@ -244,7 +278,7 @@ window.salvarEGerarReport = function() {
   const ban = document.getElementById('check-banho').checked ? '✅ OK' : '❌ Pendente';
   const obs = document.getElementById('rotina-obs').value.trim();
 
-  const texto = `🌸 *REPORT DIÁRIO - SPACE DA BIBI* 🌸\n📅 Data: ${dataStr} | Escola: ${escola}\n\n*Rotina:*\n• Refeições: ${ref}\n• Medicamentos: ${rem}\n• Tarefas: ${lic}\n• Higiene: ${ban}\n\n*Obs:* ${obs || 'Tudo ótimo por aqui!'}`;
+  const texto = `🌸 *REPORT DIÁRIO - SPACE DA ${perfilNome.toUpperCase()}* 🌸\n📅 Data: ${dataStr} | Escola: ${escola}\n\n*Rotina:*\n• Refeições: ${ref}\n• Medicamentos: ${rem}\n• Tarefas: ${lic}\n• Higiene: ${ban}\n\n*Obs:* ${obs || 'Tudo ótimo por aqui!'}`;
   
   reports.unshift({ id: Date.now(), data: dataStr, escola, texto });
   localStorage.setItem('space_bibi_reports', JSON.stringify(reports));
