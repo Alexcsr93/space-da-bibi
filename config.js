@@ -1,309 +1,231 @@
-// Space da Bibi - Configuração com Perfil e Foto Editáveis
+// Space da Bibi - Estado & Persistência Local
 let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
 let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
-let perfilNome = localStorage.getItem('space_bibi_perfil_nome') || 'Bianca';
-let perfilFoto = localStorage.getItem('space_bibi_perfil_foto') || '';
 
-function mesAtualFormatado() {
-  const agora = new Date();
-  const ano = agora.getFullYear();
-  const mes = String(agora.getMonth() + 1).padStart(2, '0');
-  return `${ano}-${mes}`;
-}
+document.addEventListener('DOMContentLoaded', () => {
+  const hoje = new Date().toISOString().split('T')[0];
+  const mesAtual = hoje.substring(0, 7);
+  
+  if (document.getElementById('gasto-data')) document.getElementById('gasto-data').value = hoje;
+  if (document.getElementById('rotina-data')) document.getElementById('rotina-data').value = hoje;
+  if (document.getElementById('filtro-mes')) document.getElementById('filtro-mes').value = mesAtual;
 
-let mesSelecionado = mesAtualFormatado();
+  renderizarGeral();
+});
 
-// Atualizar Foto do Perfil
-window.tratarFotoPerfil = function(event) {
-  const file = event.target.files[0];
-  if (!file) return;
+function trocarAba(aba) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById(`aba-${aba}`).classList.remove('hidden');
 
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    perfilFoto = e.target.result;
-    localStorage.setItem('space_bibi_perfil_foto', perfilFoto);
-    const imgPreview = document.getElementById('perfil-foto-preview');
-    if (imgPreview) imgPreview.src = perfilFoto;
-  };
-  reader.readAsDataURL(file);
-}
-
-window.salvarPerfilNome = function(novoNome) {
-  if (novoNome.trim()) {
-    perfilNome = novoNome.trim();
-    localStorage.setItem('space_bibi_perfil_nome', perfilNome);
-  }
-}
-
-window.tratarFotoDrive = function(event) {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const hiddenInput = document.getElementById('gasto-drive');
-    if (hiddenInput) hiddenInput.value = e.target.result;
-    const labelText = document.getElementById('file-label-text');
-    if (labelText) labelText.innerText = "Foto anexada!";
-  };
-  reader.readAsDataURL(file);
-}
-
-window.abrirComprovanteModal = function(base64Data) {
-  const modal = document.getElementById('modal-foto');
-  const img = document.getElementById('img-comprovante-zoom');
-  if (modal && img) {
-    img.src = base64Data;
-    modal.classList.remove('hidden');
-  }
-}
-
-window.mudarFiltroMes = function(novoMes) {
-  mesSelecionado = novoMes;
-  window.renderizarGeral();
-}
-
-window.renderizarGeral = function() {
-  try {
-    // Carregar dados de perfil na tela
-    const inputNome = document.getElementById('perfil-nome-input');
-    if (inputNome && document.activeElement !== inputNome) {
-      inputNome.value = perfilNome;
+  const btns = ['inicio', 'financeiro', 'rotina'];
+  btns.forEach(b => {
+    const btn = document.getElementById(`btn-${b}`);
+    if (b === aba) {
+      btn.className = 'flex flex-col items-center justify-center py-1.5 text-pink-500 font-bold text-[10px]';
+    } else {
+      btn.className = 'flex flex-col items-center justify-center py-1.5 text-slate-400 font-medium text-[10px]';
     }
-    const imgPreview = document.getElementById('perfil-foto-preview');
-    if (imgPreview && perfilFoto) {
-      imgPreview.src = perfilFoto;
-    }
-
-    atualizarSeletorMeses();
-
-    const gastosFiltrados = gastos.filter(g => {
-      if (!g.dataIso) return false;
-      return g.dataIso.startsWith(mesSelecionado);
-    });
-
-    const totalGeral = gastos.reduce((acc, g) => acc + (g.valor || 0), 0);
-    const totalMes = gastosFiltrados.reduce((acc, g) => acc + (g.valor || 0), 0);
-
-    if(document.getElementById('home-total-geral')) document.getElementById('home-total-geral').innerText = `R$ ${totalGeral.toFixed(2).replace('.', ',')}`;
-    if(document.getElementById('home-total-mes')) document.getElementById('home-total-mes').innerText = `R$ ${totalMes.toFixed(2).replace('.', ',')}`;
-    if(document.getElementById('home-qtd-gastos')) document.getElementById('home-qtd-gastos').innerText = `${gastosFiltrados.length} lançamentos neste mês`;
-    if(document.getElementById('home-total-reports')) document.getElementById('home-total-reports').innerText = reports.length;
-
-    const homeRec = document.getElementById('home-recentes');
-    if (homeRec) {
-      if (gastos.length === 0) {
-        homeRec.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhuma atividade recente.</p>';
-      } else {
-        let htmlHome = '';
-        gastos.slice(0, 3).forEach(g => {
-          htmlHome += `
-            <div class="flex justify-between items-center p-2.5 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-              <div>
-                <p class="font-bold text-slate-800">${g.desc}</p>
-                <p class="text-[10px] text-slate-500">${g.dataBr || ''} • <span class="text-pink-600 font-semibold">${g.cat}</span></p>
-              </div>
-              <span class="font-black text-slate-900">R$ ${(g.valor || 0).toFixed(2).replace('.', ',')}</span>
-            </div>
-          `;
-        });
-        homeRec.innerHTML = htmlHome;
-      }
-    }
-
-    const listaG = document.getElementById('lista-gastos');
-    if (listaG) {
-      if (gastosFiltrados.length === 0) {
-        listaG.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhum gasto registrado neste mês.</p>';
-      } else {
-        let htmlGastos = '';
-        gastosFiltrados.forEach((g) => {
-          htmlGastos += `
-            <div class="flex justify-between items-center p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs">
-              <div>
-                <p class="font-bold text-slate-800">${g.desc}</p>
-                <p class="text-[10px] text-slate-500">${g.dataBr || ''} • <span class="text-pink-600 font-semibold">${g.cat}</span> (${g.divisao})</p>
-                ${g.drive ? `<button onclick="abrirComprovanteModal('${g.drive}')" class="text-[10px] text-pink-600 hover:underline flex items-center gap-1 mt-0.5 text-left font-semibold"><i data-lucide="image" class="w-3 h-3"></i> Ver Comprovante</button>` : ''}
-              </div>
-              <div class="flex items-center gap-2">
-                <span class="font-black text-slate-900">R$ ${(g.valor || 0).toFixed(2).replace('.', ',')}</span>
-                <button onclick="removerGasto(${g.id})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-              </div>
-            </div>
-          `;
-        });
-        listaG.innerHTML = htmlGastos;
-      }
-    }
-
-    const listaRep = document.getElementById('lista-reports');
-    if (listaRep) {
-      if (reports.length === 0) {
-        listaRep.innerHTML = '<p class="text-xs text-center text-slate-400 py-3">Nenhum report salvo ainda.</p>';
-      } else {
-        let htmlReports = '';
-        reports.forEach(r => {
-          htmlReports += `
-            <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-xs space-y-1">
-              <div class="flex justify-between items-center font-bold text-purple-900">
-                <span>📅 ${r.data} (Escola: ${r.escola})</span>
-                <button onclick="removerReport(${r.id})" class="text-slate-400 hover:text-red-500 p-1"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
-              </div>
-              <p class="text-slate-600 text-[11px] whitespace-pre-line">${r.texto}</p>
-            </div>
-          `;
-        });
-        listaRep.innerHTML = htmlReports;
-      }
-    }
-
-    if (typeof lucide !== 'undefined') lucide.createIcons();
-  } catch (err) {
-    console.error("Erro ao renderizar:", err);
-  }
-}
-
-function atualizarSeletorMeses() {
-  const select = document.getElementById('filtro-mes');
-  if (!select) return;
-
-  let mesesSet = new Set();
-  mesesSet.add(mesAtualFormatado());
-  gastos.forEach(g => {
-    if (g.dataIso) mesesSet.add(g.dataIso.substring(0, 7));
   });
-
-  let mesesOrdenados = Array.from(mesesSet).sort().reverse();
-
-  let optionsHtml = '';
-  mesesOrdenados.forEach(m => {
-    let [ano, mes] = m.split('-');
-    let nomeMes = obterNomeMes(mes);
-    let selected = m === mesSelecionado ? 'selected' : '';
-    optionsHtml += `<option value="${m}" ${selected}>${nomeMes} de ${ano}</option>`;
-  });
-
-  select.innerHTML = optionsHtml;
 }
 
-function obterNomeMes(numMes) {
-  const meses = {
-    '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
-    '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
-    '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+function adicionarGasto(e) {
+  e.preventDefault();
+  const desc = document.getElementById('gasto-desc').value.trim();
+  const valor = parseFloat(document.getElementById('gasto-valor').value);
+  const cat = document.getElementById('gasto-cat').value;
+  const data = document.getElementById('gasto-data').value;
+  const divisao = document.getElementById('gasto-divisao').value;
+  const fotoInput = document.getElementById('gasto-foto');
+
+  if (!desc || isNaN(valor)) return alert('Preencha os campos obrigatórios!');
+
+  const processarESalvar = (fotoBase64 = null) => {
+    const novoGasto = {
+      id: Date.now(),
+      desc,
+      valor,
+      cat,
+      data,
+      divisao,
+      foto: fotoBase64
+    };
+
+    gastos.unshift(novoGasto);
+    localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
+    document.getElementById('form-gasto').reset();
+    document.getElementById('gasto-data').value = new Date().toISOString().split('T')[0];
+    renderizarGeral();
+    alert('Despesa lançada com sucesso!');
   };
-  return meses[numMes] || numMes;
+
+  if (fotoInput.files && fotoInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(event) {
+      processarESalvar(event.target.result);
+    };
+    reader.readAsDataURL(fotoInput.files[0]);
+  } else {
+    processarESalvar();
+  }
 }
 
-window.adicionarGasto = function() {
-  const descElem = document.getElementById('gasto-desc');
-  const valorElem = document.getElementById('gasto-valor');
-  const dataElem = document.getElementById('gasto-data');
-  const catElem = document.getElementById('gasto-cat');
-  const divisaoElem = document.getElementById('gasto-divisao');
-  const driveElem = document.getElementById('gasto-drive');
+function renderizarGeral() {
+  renderizarGastos();
+  renderizarReports();
+  atualizarDashboard();
+}
 
-  if (!descElem || !valorElem || !dataElem) {
-    alert('Erro interno: campos do formulário não encontrados.');
+function renderizarGastos() {
+  const lista = document.getElementById('lista-gastos');
+  if (!lista) return;
+
+  const mesFiltro = document.getElementById('filtro-mes').value;
+  const gastosFiltrados = mesFiltro ? gastos.filter(g => g.data.startsWith(mesFiltro)) : gastos;
+
+  if (gastosFiltrados.length === 0) {
+    lista.innerHTML = '<p class="text-xs text-slate-400 py-3 text-center">Nenhum gasto registrado neste mês.</p>';
     return;
   }
 
-  const desc = descElem.value.trim();
-  const valor = parseFloat(valorElem.value);
-  const dataIso = dataElem.value;
-  const cat = catElem ? catElem.value : 'Outros';
-  const divisao = divisaoElem ? divisaoElem.value : 'Dividido 50/50';
-  const drive = driveElem ? driveElem.value.trim() : '';
+  lista.innerHTML = gastosFiltrados.map(g => `
+    <div class="flex items-center justify-between p-3 bg-slate-50 rounded-xl border border-slate-100">
+      <div class="space-y-0.5">
+        <p class="text-xs font-bold text-slate-800">${g.desc}</p>
+        <p class="text-[10px] text-slate-500">${g.data} • <span class="text-pink-600 font-medium">${g.cat}</span> • ${g.divisao}</p>
+        ${g.foto ? `<button onclick="abrirModalFoto('${g.id}')" class="text-[10px] text-purple-600 underline font-semibold mt-1">Ver Comprovante</button>` : ''}
+      </div>
+      <div class="text-right">
+        <p class="text-xs font-extrabold text-slate-800">R$ ${g.valor.toFixed(2)}</p>
+        <button onclick="removerGasto(${g.id})" class="text-[10px] text-rose-400 hover:text-rose-600 mt-1">&times; Apagar</button>
+      </div>
+    </div>
+  `).join('');
+}
 
-  if (!desc || isNaN(valor) || valor <= 0 || !dataIso) {
-    alert('Preencha a descrição, um valor válido e a data.');
-    return;
+function abrirModalFoto(id) {
+  const gasto = gastos.find(g => g.id == id);
+  if (gasto && gasto.foto) {
+    document.getElementById('img-modal').src = gasto.foto;
+    document.getElementById('modal-foto').classList.remove('hidden');
   }
-
-  let partes = dataIso.split('-');
-  let dataBr = `${partes[2]}/${partes[1]}/${partes[0]}`;
-
-  const novo = { id: Date.now(), dataIso, dataBr, desc, valor, cat, divisao, drive };
-  gastos.unshift(novo);
-  
-  localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
-  mesSelecionado = dataIso.substring(0, 7);
-  window.renderizarGeral();
-
-  descElem.value = '';
-  valorElem.value = '';
-  if (driveElem) driveElem.value = '';
-  const labelText = document.getElementById('file-label-text');
-  if (labelText) labelText.innerText = 'Tirar Foto do Comprovante';
-  
-  alert('Gasto salvo com sucesso!');
 }
 
-window.removerGasto = function(id) {
-  gastos = gastos.filter(g => g.id !== id);
-  localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
-  window.renderizarGeral();
+function fecharModalFoto() {
+  document.getElementById('modal-foto').classList.add('hidden');
 }
 
-window.removerReport = function(id) {
-  reports = reports.filter(r => r.id !== id);
-  localStorage.setItem('space_bibi_reports', JSON.stringify(reports));
-  window.renderizarGeral();
+function removerGasto(id) {
+  if (confirm('Deseja excluir este gasto?')) {
+    gastos = gastos.filter(g => g.id !== id);
+    localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
+    renderizarGeral();
+  }
 }
 
-window.exportarCSV = function() {
-  const gastosFiltrados = gastos.filter(g => g.dataIso && g.dataIso.startsWith(mesSelecionado));
-  if (gastosFiltrados.length === 0) return alert('Sem dados para exportar neste mês.');
-  let csv = "Data;Descrição;Categoria;Valor;Divisão\n";
-  gastosFiltrados.forEach(g => { csv += `${g.dataBr};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao}\n`; });
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.setAttribute('download', `gastos_space_bibi_${mesSelecionado}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-}
-
-window.salvarEGerarReport = function() {
-  const dataElem = document.getElementById('rotina-data');
-  const escolaElem = document.getElementById('rotina-escola');
-  if (!dataElem || !escolaElem) return;
-
-  const dataStr = dataElem.value || new Date().toLocaleDateString('pt-BR');
-  const escola = escolaElem.value || 'Escola';
+function salvarEGerarReport() {
+  const dataStr = document.getElementById('rotina-data').value;
   const ref = document.getElementById('check-refeicao').checked ? '✅ OK' : '❌ Pendente';
   const rem = document.getElementById('check-remedio').checked ? '✅ OK' : '❌ Pendente';
   const lic = document.getElementById('check-licao').checked ? '✅ OK' : '❌ Pendente';
   const ban = document.getElementById('check-banho').checked ? '✅ OK' : '❌ Pendente';
   const obs = document.getElementById('rotina-obs').value.trim();
 
-  const texto = `🌸 *REPORT DIÁRIO - SPACE DA ${perfilNome.toUpperCase()}* 🌸\n📅 Data: ${dataStr} | Escola: ${escola}\n\n*Rotina:*\n• Refeições: ${ref}\n• Medicamentos: ${rem}\n• Tarefas: ${lic}\n• Higiene: ${ban}\n\n*Obs:* ${obs || 'Tudo ótimo por aqui!'}`;
-  
-  reports.unshift({ id: Date.now(), data: dataStr, escola, texto });
-  localStorage.setItem('space_bibi_reports', JSON.stringify(reports));
-  window.renderizarGeral();
+  const texto = `🌸 *REPORT DIÁRIO - SPACE DA BIBI* 🌸\n📅 Data: ${dataStr}\n\n*Rotina:*\n• Refeições: ${ref}\n• Medicamentos: ${rem}\n• Tarefas: ${lic}\n• Higiene: ${ban}\n\n*Obs:* ${obs || 'Tudo ótimo por aqui!'}`;
 
-  document.getElementById('texto-report').innerText = texto;
+  reports.unshift({ id: Date.now(), data: dataStr, texto });
+  localStorage.setItem('space_bibi_reports', JSON.stringify(reports));
+
+  document.getElementById('texto-report').innerText = texto.replace(/\\n/g, '\n');
   document.getElementById('box-preview-report').classList.remove('hidden');
   
-  const encodedText = encodeURIComponent(texto);
+  const encodedText = encodeURIComponent(texto.replace(/\\n/g, '\n'));
   document.getElementById('whatsapp-link').href = `https://api.whatsapp.com/send?text=${encodedText}`;
+  renderizarGeral();
 }
 
-window.copiarTextoReport = function() {
+function copiarTextoReport() {
   const txt = document.getElementById('texto-report').innerText;
   navigator.clipboard.writeText(txt);
-  alert('Report copiado para a área de transferência!');
+  alert('Report copiado para o WhatsApp!');
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function renderizarReports() {
+  const lista = document.getElementById('lista-reports');
+  if (!lista) return;
+
+  if (reports.length === 0) {
+    lista.innerHTML = '<p class="text-xs text-slate-400 py-3 text-center">Nenhum report registrado.</p>';
+    return;
+  }
+
+  lista.innerHTML = reports.slice(0, 5).map(r => `
+    <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-1">
+      <div class="flex justify-between items-center text-xs font-bold text-slate-700">
+        <span>📅 ${r.data}</span>
+        <button onclick="removerReport(${r.id})" class="text-rose-400 text-[10px]">&times; Apagar</button>
+      </div>
+      <p class="text-[11px] text-slate-600 whitespace-pre-line leading-relaxed">${r.texto.replace(/\\n/g, '\n')}</p>
+    </div>
+  `).join('');
+}
+
+function removerReport(id) {
+  if (confirm('Deseja excluir este report?')) {
+    reports = reports.filter(r => r.id !== id);
+    localStorage.setItem('space_bibi_reports', JSON.stringify(reports));
+    renderizarGeral();
+  }
+}
+
+function atualizarDashboard() {
   const hoje = new Date().toISOString().split('T')[0];
-  if (document.getElementById('rotina-data') && !document.getElementById('rotina-data').value) {
-    document.getElementById('rotina-data').value = hoje;
-  }
-  if (document.getElementById('gasto-data') && !document.getElementById('gasto-data').value) {
-    document.getElementById('gasto-data').value = hoje;
-  }
-  window.renderizarGeral();
-});
+  const mesAtual = hoje.substring(0, 7);
+
+  const gastosMes = gastos.filter(g => g.data.startsWith(mesAtual));
+  const totalMes = gastosMes.reduce((acc, g) => acc + g.valor, 0);
+
+  let papai = 0;
+  let mamae = 0;
+
+  gastosMes.forEach(g => {
+    if (g.divisao === '50/50') {
+      papai += g.valor / 2;
+      mamae += g.valor / 2;
+    } else if (g.divisao === '100% Papai') {
+      papai += g.valor;
+    } else if (g.divisao === '100% Mamãe') {
+      mamae += g.valor;
+    }
+  });
+
+  document.getElementById('dash-total-mes').innerText = `R$ ${totalMes.toFixed(2)}`;
+  document.getElementById('dash-total-papai').innerText = `R$ ${papai.toFixed(2)}`;
+  document.getElementById('dash-total-mamae').innerText = `R$ ${mamae.toFixed(2)}`;
+
+  const reportsHojeCount = reports.filter(r => r.data === hoje).length;
+  document.getElementById('dash-reports-hoje').innerText = reportsHojeCount;
+}
+
+function exportarCSV() {
+  if (gastos.length === 0) return alert('Sem dados para exportar.');
+  let csv = 'Data;Descrição;Categoria;Valor;Divisão\n';
+  gastos.forEach(g => { csv += `${g.data};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao}\n`; });
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', 'gastos_space_bibi.csv');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function exportarBackupJSON() {
+  const dados = { gastos, reports };
+  const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', `space_bibi_backup_${new Date().toISOString().split('T')[0]}.json`);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}

@@ -3,309 +3,238 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Space da Bibi - Gestão & Convivência</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <title>Space da Bibi - Gestão & Rotina</title>
   <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#db2777">
+  <meta name="theme-color" content="#ec4899">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen pb-24 font-sans">
+<body class="bg-slate-50 min-h-screen pb-20 text-slate-800 font-sans">
 
   <!-- Header -->
-  <header class="bg-gradient-to-r from-pink-600 to-purple-600 text-white p-4 shadow-md sticky top-0 z-50">
+  <header class="bg-gradient-to-r from-pink-500 to-purple-600 text-white p-4 shadow-md sticky top-0 z-40">
     <div class="max-w-md mx-auto flex justify-between items-center">
-      <div class="flex items-center gap-2">
-        <i data-lucide="sparkles" class="w-6 h-6"></i>
-        <h1 class="font-bold text-lg tracking-wide">Space da Bibi</h1>
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center font-bold text-lg">🚀</div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">Space da Bibi</h1>
+          <p class="text-xs text-pink-100">Gestão de Gastos e Rotina</p>
+        </div>
       </div>
-      <span class="text-xs bg-white/20 px-2 py-1 rounded-full font-medium">v1.4</span>
+      <button onclick="exportarBackupJSON()" title="Exportar Backup" class="text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+        <i class="fas fa-download"></i> Backup
+      </button>
     </div>
   </header>
 
-  <!-- Navigation Tabs -->
-  <nav class="max-w-md mx-auto px-4 mt-4">
-    <div class="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200 gap-1">
-      <button onclick="mudarAba('home')" id="btn-home" class="flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-pink-600 text-white shadow-sm">
-        <i data-lucide="home" class="w-4 h-4"></i> Início
-      </button>
-      <button onclick="mudarAba('financeiro')" id="btn-financeiro" class="flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50">
-        <i data-lucide="wallet" class="w-4 h-4"></i> Financeiro
-      </button>
-      <button onclick="mudarAba('rotina')" id="btn-rotina" class="flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50">
-        <i data-lucide="calendar-check" class="w-4 h-4"></i> Rotina
-      </button>
-    </div>
-  </nav>
-
-  <!-- Main Container -->
+  <!-- Container Principal -->
   <main class="max-w-md mx-auto p-4 space-y-4">
 
-    <!-- 1. ABA TELA INICIAL (HOME COM FOTO E NOME EDITÁVEIS) -->
-    <section id="aba-home" class="space-y-4">
-      
-      <!-- Card de Perfil da Criança -->
-      <div class="bg-gradient-to-br from-pink-500 to-purple-600 p-5 rounded-3xl text-white shadow-md flex items-center gap-4">
+    <!-- ABA 1: DASHBOARD / INÍCIO -->
+    <section id="aba-inicio" class="tab-content space-y-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center space-x-4">
         <div class="relative">
-          <img id="perfil-foto-preview" src="https://cdn-icons-png.flaticon.com/512/2921/2921222.png" alt="Foto" class="w-16 h-16 rounded-full object-cover border-2 border-white bg-white shadow-inner">
-          <label class="absolute bottom-0 right-0 bg-white text-pink-600 p-1 rounded-full cursor-pointer shadow hover:bg-pink-50 transition">
-            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
-            <input type="file" accept="image/*" class="hidden" onchange="tratarFotoPerfil(event)">
-          </label>
+          <img id="avatar-img" src="https://cdn-icons-png.flaticon.com/512/3082/3082060.png" class="w-16 h-16 rounded-full object-cover border-2 border-pink-400">
         </div>
-        <div class="flex-1 space-y-1">
-          <p class="text-[10px] uppercase font-medium text-pink-100 tracking-wider">Bem-vindos ao espaço da</p>
-          <div class="flex items-center gap-2">
-            <input type="text" id="perfil-nome-input" value="Bianca" onblur="salvarPerfilNome(this.value)" class="bg-transparent font-black text-xl text-white border-b border-white/40 focus:outline-none focus:border-white w-full">
-          </div>
-          <p class="text-xs text-pink-100">Gestão & Convivência Familiar</p>
+        <div>
+          <h2 class="text-xl font-bold text-slate-800">Olá, Família! 👋</h2>
+          <p class="text-xs text-slate-500 mt-0.5">Acompanhe a rotina e as despesas da Bianca em um só lugar.</p>
         </div>
       </div>
 
       <!-- Resumo do Mês -->
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-1">
-        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Gasto no Mês Atual</p>
-        <h2 id="home-total-mes" class="text-2xl font-black text-pink-600">R$ 0,00</h2>
-        <p id="home-qtd-gastos" class="text-xs text-slate-500">0 lançamentos registrados neste mês</p>
-      </div>
-
       <div class="grid grid-cols-2 gap-3">
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-          <div class="p-3 bg-pink-50 text-pink-600 rounded-xl">
-            <i data-lucide="file-text" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <p class="text-[10px] font-bold text-slate-400 uppercase">Reports Salvos</p>
-            <p id="home-total-reports" class="text-lg font-black text-slate-800">0</p>
-          </div>
+        <div class="bg-gradient-to-br from-pink-500 to-rose-500 text-white rounded-2xl p-4 shadow-sm">
+          <p class="text-xs text-pink-100">Total do Mês</p>
+          <p id="dash-total-mes" class="text-xl font-extrabold mt-1">R$ 0,00</p>
+          <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Gastos com a Bibi</span>
         </div>
-        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-3">
-          <div class="p-3 bg-purple-50 text-purple-600 rounded-xl">
-            <i data-lucide="wallet" class="w-5 h-5"></i>
-          </div>
-          <div>
-            <p class="text-[10px] font-bold text-slate-400 uppercase">Total Geral</p>
-            <p id="home-total-geral" class="text-lg font-black text-slate-800">R$ 0,00</p>
-          </div>
+        <div class="bg-gradient-to-br from-purple-600 to-indigo-600 text-white rounded-2xl p-4 shadow-sm">
+          <p class="text-xs text-purple-100">Reports Hoje</p>
+          <p id="dash-reports-hoje" class="text-xl font-extrabold mt-1">0</p>
+          <span class="text-[10px] bg-white/20 px-2 py-0.5 rounded-full mt-2 inline-block">Rotina registrada</span>
         </div>
       </div>
 
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <h3 class="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">Atividades Recentes</h3>
-        <div id="home-recentes" class="space-y-2">
-          <p class="text-xs text-center text-slate-400 py-3">Nenhuma atividade recente.</p>
+      <!-- Divisão Acumulada -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100">
+        <h3 class="text-sm font-bold text-slate-700 mb-3 flex items-center gap-2">
+          <i class="fas fa-balance-scale text-pink-500"></i> Divisão de Gastos (Mês Atual)
+        </h3>
+        <div class="space-y-2 text-xs">
+          <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl">
+            <span class="font-medium text-slate-600">Total Responsabilidade Papai:</span>
+            <span id="dash-total-papai" class="font-bold text-slate-800">R$ 0,00</span>
+          </div>
+          <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl">
+            <span class="font-medium text-slate-600">Total Responsabilidade Mamãe:</span>
+            <span id="dash-total-mamae" class="font-bold text-slate-800">R$ 0,00</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 2. ABA FINANCEIRO -->
-    <section id="aba-financeiro" class="space-y-4 hidden">
-      <div class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm flex items-center justify-between">
-        <span class="text-xs font-bold text-slate-600">Filtrar por Mês:</span>
-        <select id="filtro-mes" onchange="mudarFiltroMes(this.value)" class="p-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-pink-600 focus:outline-none focus:ring-2 focus:ring-pink-500">
-        </select>
-      </div>
-
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <i data-lucide="plus-circle" class="w-5 h-5 text-pink-600"></i>
-          <h2 class="font-bold text-sm text-slate-800">Novo Lançamento</h2>
-        </div>
-        
-        <div class="space-y-2 text-xs">
+    <!-- ABA 2: FINANCEIRO -->
+    <section id="aba-financeiro" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <h3 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <i class="fas fa-plus-circle text-pink-500"></i> Novo Gasto
+        </h3>
+        <form id="form-gasto" onsubmit="adicionarGasto(event)" class="space-y-3">
           <div>
-            <label class="font-semibold text-slate-600">Descrição</label>
-            <input type="text" id="gasto-desc" placeholder="Ex: Farmácia, Roupas, Mensalidade" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Descrição</label>
+            <input type="text" id="gasto-desc" required placeholder="Ex: Mensalidade escolar, Fraldas..." class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
           </div>
-          
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="font-semibold text-slate-600">Valor (R$)</label>
-              <input type="number" step="0.01" id="gasto-valor" placeholder="0,00" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Valor (R$)</label>
+              <input type="number" step="0.01" id="gasto-valor" required placeholder="0,00" class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
             </div>
             <div>
-              <label class="font-semibold text-slate-600">Data do Gasto</label>
-              <input type="date" id="gasto-data" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
-            </div>
-          </div>
-
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="font-semibold text-slate-600">Categoria</label>
-              <select id="gasto-cat" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
-                <option value="Escola / Estudos">Escola / Estudos</option>
-                <option value="Saúde / Farmácia">Saúde / Farmácia</option>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Categoria</label>
+              <select id="gasto-cat" class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+                <option value="Escola">Escola</option>
+                <option value="Saúde">Saúde</option>
                 <option value="Alimentação">Alimentação</option>
-                <option value="Lazer / Passeios">Lazer / Passeios</option>
+                <option value="Lazer">Lazer</option>
+                <option value="Vestuário">Vestuário</option>
                 <option value="Outros">Outros</option>
               </select>
             </div>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="font-semibold text-slate-600">Divisão</label>
-              <select id="gasto-divisao" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-pink-500">
-                <option value="Dividido 50/50">Dividido 50/50</option>
-                <option value="Pago por mim">Pago por mim</option>
-                <option value="Pago pela Mãe">Pago pela Mãe</option>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Data</label>
+              <input type="date" id="gasto-data" required class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+            </div>
+            <div>
+              <label class="block text-xs font-semibold text-slate-600 mb-1">Divisão</label>
+              <select id="gasto-divisao" class="w-full text-sm border border-slate-200 rounded-xl p-2.5 focus:outline-none focus:ring-2 focus:ring-pink-400">
+                <option value="50/50">Divisão 50% / 50%</option>
+                <option value="100% Papai">100% Papai</option>
+                <option value="100% Mamãe">100% Mamãe</option>
               </select>
             </div>
           </div>
-
           <div>
-            <label class="font-semibold text-slate-600">Comprovante (Foto)</label>
-            <label class="flex items-center justify-center gap-1.5 w-full mt-1 p-2.5 bg-slate-50 border border-dashed border-slate-300 rounded-xl cursor-pointer hover:bg-slate-100 transition text-slate-600">
-              <i data-lucide="camera" class="w-4 h-4 text-pink-600"></i>
-              <span id="file-label-text" class="truncate">Tirar Foto do Comprovante</span>
-              <input type="file" accept="image/*" class="hidden" onchange="tratarFotoDrive(event)">
-            </label>
-            <input type="hidden" id="gasto-drive">
+            <label class="block text-xs font-semibold text-slate-600 mb-1">Comprovante / Foto</label>
+            <input type="file" id="gasto-foto" accept="image/*" class="w-full text-xs text-slate-500 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-pink-50 file:text-pink-600 hover:file:bg-pink-100">
           </div>
-
-          <button onclick="adicionarGasto()" class="w-full mt-2 py-3 bg-pink-600 hover:bg-pink-700 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <i data-lucide="check" class="w-4 h-4"></i> Salvar Despesa
+          <button type="submit" class="w-full bg-pink-500 hover:bg-pink-600 text-white font-bold text-sm py-3 rounded-xl shadow-sm transition">
+            Lançar Despesa
           </button>
-        </div>
+        </form>
       </div>
 
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-          <h3 id="titulo-historico-mes" class="font-bold text-sm text-slate-800">Gastos do Mês</h3>
-          <button onclick="exportarCSV()" class="text-xs text-pink-600 hover:underline flex items-center gap-1 font-semibold">
-            <i data-lucide="download" class="w-3.5 h-3.5"></i> Exportar CSV
+      <!-- Filtros e Lista de Gastos -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="text-sm font-bold text-slate-800">Histórico de Gastos</h3>
+          <button onclick="exportarCSV()" class="text-xs text-pink-600 font-semibold hover:underline flex items-center gap-1">
+            <i class="fas fa-file-csv"></i> Exportar CSV
           </button>
         </div>
-        <div id="lista-gastos" class="space-y-2 max-h-72 overflow-y-auto">
-          <p class="text-xs text-center text-slate-400 py-3">Nenhum gasto registrado neste mês.</p>
+        <div class="flex gap-2">
+          <input type="month" id="filtro-mes" onchange="renderizarGastos()" class="text-xs border border-slate-200 rounded-xl p-2 focus:outline-none">
+        </div>
+        <div id="lista-gastos" class="space-y-2">
+          <!-- Gastos via JS -->
         </div>
       </div>
     </section>
 
-    <!-- 3. ABA ROTINA & REPORT -->
-    <section id="aba-rotina" class="space-y-4 hidden">
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <div class="flex items-center gap-2 border-b border-slate-100 pb-2">
-          <i data-lucide="file-text" class="w-5 h-5 text-purple-700"></i>
-          <h2 class="font-bold text-sm text-slate-800">Gerador de Report Diário</h2>
-        </div>
-
-        <div class="space-y-2 text-xs">
-          <div class="grid grid-cols-2 gap-2">
-            <div>
-              <label class="font-semibold text-slate-600">Data</label>
-              <input type="date" id="rotina-data" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
-            </div>
-            <div>
-              <label class="font-semibold text-slate-600">Escola / Atividade</label>
-              <input type="text" id="rotina-escola" placeholder="Ex: Colégio X / Em casa" class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500">
-            </div>
-          </div>
-
-          <div class="space-y-1.5 pt-1">
-            <label class="font-semibold text-slate-600">Checklist do Dia</label>
-            <div class="grid grid-cols-2 gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="check-refeicao" class="w-4 h-4 text-purple-600 rounded"> Refeições OK
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="check-remedio" class="w-4 h-4 text-purple-600 rounded"> Remédios / Vit.
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="check-licao" class="w-4 h-4 text-purple-600 rounded"> Lição / Tarefas
-              </label>
-              <label class="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" id="check-banho" class="w-4 h-4 text-purple-600 rounded"> Banho / Higiene
-              </label>
-            </div>
-          </div>
-
+    <!-- ABA 3: ROTINA & REPORT -->
+    <section id="aba-rotina" class="tab-content hidden space-y-4">
+      <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100">
+        <h3 class="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
+          <i class="fas fa-clipboard-check text-purple-500"></i> Check-in Diário
+        </h3>
+        <div class="space-y-3 text-xs">
           <div>
-            <label class="font-semibold text-slate-600">Observações / Destaques do Dia</label>
-            <textarea id="rotina-obs" rows="2" placeholder="Como foi o dia, humor, novidades..." class="w-full mt-1 p-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"></textarea>
+            <label class="block font-semibold text-slate-600 mb-1">Data</label>
+            <input type="date" id="rotina-data" class="w-full text-xs border border-slate-200 rounded-xl p-2">
           </div>
-
-          <button onclick="salvarEGerarReport()" class="w-full mt-2 py-3 bg-purple-700 hover:bg-purple-800 text-white font-bold rounded-xl shadow-md transition flex items-center justify-center gap-2">
-            <i data-lucide="share-2" class="w-4 h-4"></i> Gerar & Salvar Report
+          <div class="grid grid-cols-2 gap-2">
+            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
+              <input type="checkbox" id="check-refeicao" class="accent-pink-500 rounded">
+              <span class="text-slate-700">Alimentação OK</span>
+            </label>
+            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
+              <input type="checkbox" id="check-remedio" class="accent-pink-500 rounded">
+              <span class="text-slate-700">Medicamentos OK</span>
+            </label>
+            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
+              <input type="checkbox" id="check-licao" class="accent-pink-500 rounded">
+              <span class="text-slate-700">Tarefas Escolares</span>
+            </label>
+            <label class="flex items-center space-x-2 border border-slate-100 p-2.5 rounded-xl cursor-pointer">
+              <input type="checkbox" id="check-banho" class="accent-pink-500 rounded">
+              <span class="text-slate-700">Higiene / Banho</span>
+            </label>
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-600 mb-1">Observações do Dia</label>
+            <textarea id="rotina-obs" rows="3" placeholder="Ex: Hoje ela estava bem disposta, tomou a dose do remédio às 14h..." class="w-full border border-slate-200 rounded-xl p-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-purple-400"></textarea>
+          </div>
+          <button onclick="salvarEGerarReport()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold text-xs py-3 rounded-xl transition">
+            Gerar & Salvar Report
           </button>
         </div>
       </div>
 
-      <div id="box-preview-report" class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3 hidden">
-        <h3 class="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">Preview para WhatsApp</h3>
-        <div id="texto-report" class="p-3 bg-slate-50 rounded-xl text-xs whitespace-pre-line font-mono text-slate-700 border border-slate-200"></div>
+      <!-- Preview & Botão WhatsApp -->
+      <div id="box-preview-report" class="hidden bg-emerald-50 rounded-2xl p-4 border border-emerald-100 space-y-3">
+        <h4 class="text-xs font-bold text-emerald-800 flex items-center gap-1.5">
+          <i class="fab fa-whatsapp text-emerald-600 text-sm"></i> Report Pronto para Envio
+        </h4>
+        <div id="texto-report" class="text-xs bg-white p-3 rounded-xl border border-emerald-200 whitespace-pre-line text-slate-700"></div>
         <div class="flex gap-2">
-          <button onclick="copiarTextoReport()" class="flex-1 py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 hover:bg-slate-900 transition">
-            <i data-lucide="copy" class="w-3.5 h-3.5"></i> Copiar Texto
-          </button>
-          <a id="whatsapp-link" href="#" target="_blank" class="flex-1 py-2.5 bg-emerald-600 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 hover:bg-emerald-700 transition">
-            <i data-lucide="send" class="w-3.5 h-3.5"></i> Enviar WhatsApp
+          <a id="whatsapp-link" target="_blank" class="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs py-2.5 text-center rounded-xl transition flex items-center justify-center gap-1">
+            <i class="fab fa-whatsapp"></i> Enviar WhatsApp
           </a>
+          <button onclick="copiarTextoReport()" class="bg-white border border-emerald-300 text-emerald-700 px-3 rounded-xl text-xs font-semibold">
+            Copiar
+          </button>
         </div>
       </div>
 
-      <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-        <h3 class="font-bold text-sm text-slate-800 border-b border-slate-100 pb-2">Reports Salvos</h3>
-        <div id="lista-reports" class="space-y-2 max-h-72 overflow-y-auto">
-          <p class="text-xs text-center text-slate-400 py-3">Nenhum report salvo ainda.</p>
+      <!-- Histórico de Reports -->
+      <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-100 space-y-3">
+        <h3 class="text-sm font-bold text-slate-800">Histórico de Reports</h3>
+        <div id="lista-reports" class="space-y-2">
+          <!-- Reports via JS -->
         </div>
       </div>
     </section>
 
   </main>
 
-  <!-- MODAL DE ZOOM DA FOTO DO COMPROVANTE -->
-  <div id="modal-foto" class="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4 hidden">
-    <div class="bg-white rounded-3xl max-w-sm w-full p-4 space-y-3 shadow-2xl relative">
-      <div class="flex justify-between items-center border-b border-slate-100 pb-2">
-        <h3 class="font-bold text-sm text-slate-800">Comprovante Anexado</h3>
-        <button onclick="fecharModalFoto()" class="text-slate-400 hover:text-red-500 p-1">
-          <i data-lucide="x" class="w-5 h-5"></i>
-        </button>
-      </div>
-      <div class="flex justify-center bg-slate-100 rounded-2xl overflow-hidden p-2 max-h-96">
-        <img id="img-comprovante-zoom" src="" alt="Comprovante" class="object-contain max-h-80 rounded-xl">
-      </div>
-      <button onclick="fecharModalFoto()" class="w-full py-2.5 bg-slate-800 text-white font-bold rounded-xl text-xs hover:bg-slate-900 transition">
-        Fechar
+  <!-- Navigation Bar Bottom -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-2 z-50">
+    <div class="max-w-md mx-auto grid grid-cols-3 gap-1">
+      <button onclick="trocarAba('inicio')" id="btn-inicio" class="flex flex-col items-center justify-center py-1.5 text-pink-500 font-bold text-[10px]">
+        <i class="fas fa-home text-base mb-0.5"></i> Início
       </button>
+      <button onclick="trocarAba('financeiro')" id="btn-financeiro" class="flex flex-col items-center justify-center py-1.5 text-slate-400 font-medium text-[10px]">
+        <i class="fas fa-wallet text-base mb-0.5"></i> Financeiro
+      </button>
+      <button onclick="trocarAba('rotina')" id="btn-rotina" class="flex flex-col items-center justify-center py-1.5 text-slate-400 font-medium text-[10px]">
+        <i class="fas fa-calendar-check text-base mb-0.5"></i> Rotina & Reports
+      </button>
+    </div>
+  </nav>
+
+  <!-- Modal Comprovante Foto -->
+  <div id="modal-foto" class="hidden fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl p-3 max-w-sm w-full space-y-3">
+      <div class="flex justify-between items-center">
+        <h3 class="text-xs font-bold text-slate-800">Comprovante de Despesa</h3>
+        <button onclick="fecharModalFoto()" class="text-slate-400 text-sm font-bold">&times;</button>
+      </div>
+      <img id="img-modal" src="" class="w-full max-h-80 object-contain rounded-xl bg-slate-100">
     </div>
   </div>
 
   <script src="config.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('sw.js');
-    }
-    
-    function mudarAba(aba) {
-      const home = document.getElementById('aba-home');
-      const fin = document.getElementById('aba-financeiro');
-      const rot = document.getElementById('aba-rotina');
-      
-      const bHome = document.getElementById('btn-home');
-      const bFin = document.getElementById('btn-financeiro');
-      const bRot = document.getElementById('btn-rotina');
-
-      home.classList.add('hidden');
-      fin.classList.add('hidden');
-      rot.classList.add('hidden');
-
-      bHome.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50";
-      bFin.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50";
-      bRot.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 text-slate-600 hover:bg-slate-50";
-
-      if (aba === 'home') {
-        home.classList.remove('hidden');
-        bHome.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-pink-600 text-white shadow-sm";
-      } else if (aba === 'financeiro') {
-        fin.classList.remove('hidden');
-        bFin.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-pink-600 text-white shadow-sm";
-      } else {
-        rot.classList.remove('hidden');
-        bRot.className = "flex-1 py-2 text-[11px] font-bold rounded-xl transition flex flex-col items-center justify-center gap-1 bg-purple-700 text-white shadow-sm";
-      }
-    }
-
-    function fecharModalFoto() {
-      document.getElementById('modal-foto').classList.add('hidden');
-    }
-  </script>
 </body>
 </html>
