@@ -1,33 +1,19 @@
-// Estados Locais / Nuvem
+// Estados Locais e Sincronizados
 let gastos = JSON.parse(localStorage.getItem('space_bibi_gastos')) || [];
 let reports = JSON.parse(localStorage.getItem('space_bibi_reports')) || [];
-let arquivoFotoParaEnviar = null;
 
-// Capturar a foto selecionada
+// Capturar a foto e converter para exibição segura em qualquer dispositivo
 window.tratarFotoDrive = function(event) {
   const file = event.target.files[0];
   if (!file) return;
-  arquivoFotoParaEnviar = file;
-  document.getElementById('file-label-text').innerText = "Foto pronta para envio!";
-}
 
-// Função auxiliar para enviar a imagem para um servidor de nuvem público e seguro via API
-async function enviarImagemParaNuvem(file) {
-  const formData = new FormData();
-  formData.append("image", file);
-
-  // Usando uma API pública gratuita e segura para hospedagem temporária/permanente de recibos
-  const response = await fetch("https://api.imgbb.com/1/upload?key=6d2038744d03d4060872288340798b11", {
-    method: "POST",
-    body: formData
-  });
-
-  const data = await response.json();
-  if (data && data.success) {
-    return data.data.url; // Retorna o link direto da imagem na nuvem
-  } else {
-    throw new Error("Falha ao enviar a imagem.");
-  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    // Salva a imagem convertida para garantir que abra sem erros de link
+    document.getElementById('gasto-drive').value = e.target.result;
+    document.getElementById('file-label-text').innerText = "Foto anexada com sucesso!";
+  };
+  reader.readAsDataURL(file);
 }
 
 window.renderizarGeral = function() {
@@ -55,7 +41,7 @@ window.renderizarGeral = function() {
             <div>
               <p class="font-bold text-slate-800">${g.desc}</p>
               <p class="text-[10px] text-slate-500">${g.data} • <span class="text-pink-600 font-semibold">${g.cat}</span> (${g.divisao})</p>
-              ${g.drive ? `<a href="${g.drive}" target="_blank" class="text-[10px] text-pink-600 hover:underline flex items-center gap-1 mt-0.5"><i data-lucide="image" class="w-3 h-3"></i> Ver Comprovante na Nuvem</a>` : ''}
+              ${g.drive ? `<a href="${g.drive}" target="_blank" class="text-[10px] text-pink-600 hover:underline flex items-center gap-1 mt-0.5"><i data-lucide="image" class="w-3 h-3"></i> Ver Comprovante</a>` : ''}
             </div>
             <div class="flex items-center gap-2">
               <span class="font-black text-slate-900">R$ ${g.valor.toFixed(2).replace('.', ',')}</span>
@@ -94,45 +80,27 @@ window.renderizarGeral = function() {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-window.adicionarGasto = async function() {
+window.adicionarGasto = function() {
   const desc = document.getElementById('gasto-desc').value.trim();
   const valor = parseFloat(document.getElementById('gasto-valor').value);
   const cat = document.getElementById('gasto-cat').value;
   const divisao = document.getElementById('gasto-divisao').value;
+  const drive = document.getElementById('gasto-drive').value.trim();
 
   if (!desc || isNaN(valor) || valor <= 0) {
     alert('Preencha a descrição e um valor válido.');
     return;
   }
 
-  let imageUrl = "";
-  if (arquivoFotoParaEnviar) {
-    document.getElementById('file-label-text').innerText = "Enviando foto para a nuvem...";
-    try {
-      imageUrl = await enviarImagemParaNuvem(arquivoFotoParaEnviar);
-    } catch (err) {
-      console.error(err);
-      alert('Erro ao enviar a foto. O gasto será salvo sem imagem.');
-    }
-  }
-
-  const novo = { 
-    id: Date.now(), 
-    data: new Date().toLocaleDateString('pt-BR'), 
-    desc, 
-    valor, 
-    cat, 
-    divisao, 
-    drive: imageUrl 
-  };
-  
+  const novo = { id: Date.now(), data: new Date().toLocaleDateString('pt-BR'), desc, valor, cat, divisao, drive };
   gastos.unshift(novo);
+  
   localStorage.setItem('space_bibi_gastos', JSON.stringify(gastos));
   renderizarGeral();
 
   document.getElementById('gasto-desc').value = '';
   document.getElementById('gasto-valor').value = '';
-  arquivoFotoParaEnviar = null;
+  document.getElementById('gasto-drive').value = '';
   document.getElementById('file-label-text').innerText = 'Tirar Foto / Arquivo';
   alert('Gasto salvo com sucesso!');
 }
@@ -151,8 +119,8 @@ window.removerReport = function(id) {
 
 window.exportarCSV = function() {
   if (gastos.length === 0) return alert('Sem dados para exportar.');
-  let csv = 'Data;Descrição;Categoria;Valor;Divisão;Comprovante\n';
-  gastos.forEach(g => { csv += `${g.data};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao};${g.drive || ''}\n`; });
+  let csv = 'Data;Descrição;Categoria;Valor;Divisão\n';
+  gastos.forEach(g => { csv += `${g.data};"${g.desc}";${g.cat};${g.valor.toFixed(2)};${g.divisao}\n`; });
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
   const link = document.createElement('a');
   link.href = URL.createObjectURL(blob);
@@ -189,4 +157,5 @@ window.copiarTextoReport = function() {
   alert('Report copiado para o WhatsApp!');
 }
 
+// Inicializa a tela assim que carregar
 renderizarGeral();
